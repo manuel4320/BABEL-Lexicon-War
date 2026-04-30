@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+﻿import * as THREE from 'three';
 import { ShipBase } from './ShipBase.js';
 import { COLORS } from '../../shared/constants.js';
 import { BoosterEffect, SHIP_BOOSTER_CONFIGS } from '../rendering/BoosterEffect.js';
@@ -130,9 +130,9 @@ export class CombatPlayerShip extends ShipBase {
         material.emissive = new THREE.Color(0.85, 0.52, 0.18);
         material.emissiveIntensity = Math.max(material.emissiveIntensity ?? 0, 3.5);
       }
-      if ('metalness' in material) material.metalness = Math.min(0.40, (material.metalness ?? 0.5) * 0.55);
-      if ('roughness' in material) material.roughness = Math.max(0.08, (material.roughness ?? 0.7) - 0.50);
-      if ('envMapIntensity' in material) material.envMapIntensity = Math.max(material.envMapIntensity ?? 0, 1.8);
+      if ('metalness' in material) material.metalness = Math.max(0.82, (material.metalness ?? 0.5));
+      if ('roughness' in material) material.roughness = Math.min(0.10, (material.roughness ?? 0.7) * 0.12);
+      if ('envMapIntensity' in material) material.envMapIntensity = Math.max(material.envMapIntensity ?? 0, 4.2);
       material.needsUpdate = true;
     });
   }
@@ -219,6 +219,9 @@ export class CombatPlayerShip extends ShipBase {
     super.update(delta);
 
     const floatY = Math.sin(this._t * 1.2) * 0.12;
+    // Sinusoidal roll — wings rise and fall at ~0.85 Hz
+    const wingRoll = Math.sin(this._t * 0.85) * 0.045;
+    this._shipRoot.rotation.z = wingRoll;
     const shakeY = this._hitShake > 0 ? Math.sin(this._t * 28) * this._hitShake * 0.35 : 0;
     if (this._hitShake > 0) this._hitShake = Math.max(0, this._hitShake - delta * 4);
     this._group.position.y = this._basePosition.y + floatY + shakeY;
@@ -229,13 +232,13 @@ export class CombatPlayerShip extends ShipBase {
 
     if (this._targetPos) {
       const dir = new THREE.Vector3().subVectors(this._targetPos, this._group.position).normalize();
-      dir.y = -0.25;
+      dir.y = -0.05;
       dir.normalize();
       const targetQuat = new THREE.Quaternion().setFromUnitVectors(
         new THREE.Vector3(0, 0, -1),
         dir,
       );
-      this._group.quaternion.slerp(targetQuat, delta * 3);
+      this._group.quaternion.slerp(targetQuat, delta * 7);
     } else {
       this._group.quaternion.slerp(new THREE.Quaternion(), delta * 2);
     }
@@ -258,6 +261,12 @@ export class CombatPlayerShip extends ShipBase {
 
   /** Call each frame while the engines are firing (e.g. when targeting, boosting, or recoiling). */
   setThrusting(on) { this._isThrusting = on; }
+
+  /** Booster burst on correct letter typed. */
+  onLetterCorrect(intensity = 1.0) {
+    this._booster.triggerLetterHit(intensity);
+    this._isThrusting = true;
+  }
 
 
   startCollapse(scene, onDone) {

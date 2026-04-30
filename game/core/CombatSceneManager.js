@@ -325,6 +325,7 @@ export class CombatSceneManager {
     } else if (correct) {
       const enemy = this.enemies.find(e => e.id === targetId);
       if (enemy) this._fireAt(enemy);
+      this._player?.onLetterCorrect?.(0.85);
     }
   }
 
