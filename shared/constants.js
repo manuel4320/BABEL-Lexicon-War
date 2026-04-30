@@ -98,10 +98,10 @@ export const FLOW_COOLDOWN_MS      = 3000;
 export const FLOW_BEAM_CHAIN       = 3;    // enemies hit per letter in flow mode
 
 export const COLORS_FLOW = {
-  RAMP: ['#4466ff', '#00ddff', '#ffcc44', '#ff7722', '#ff2244'],
-  FRAME:     '#00ff88',
-  BEAM:      '#ff2244',
-  BEAM_GLOW: '#ff6688',
+  RAMP: ['#ffffff', '#cc99ff', '#9966ff', '#7744ff', '#5533cc'],
+  FRAME:     '#9966ff',
+  BEAM:      '#7744ff',
+  BEAM_GLOW: '#aa77ff',
 };
 
 // Frases narrativas del universo BABEL — cada una es un array de palabras
@@ -127,15 +127,15 @@ export const PHRASE_POOL_ES = [
 // --- Colores del universo BABEL ---
 export const COLORS = {
   BACKGROUND:       0x000000,
-  PLAYER:           0x00ffcc,
-  ENEMY:            0xff4466,
-  ENEMY_TARGETED:   0xffcc00,
-  WORD_CORRECT:     0x00ff88,
+  PLAYER:           0xaa77ff,
+  ENEMY:            0x8855ff,
+  ENEMY_TARGETED:   0xdd99ff,
+  WORD_CORRECT:     0x9966ff,
   WORD_INCORRECT:   0xff3333,
   WORD_PENDING:     0x888888,
-  PARTICLE:         0x88aaff,
-  HUD_PRIMARY:      '#00ffcc',
-  HUD_DANGER:       '#ff4466',
+  PARTICLE:         0xaa77ff,
+  HUD_PRIMARY:      '#aa77ff',
+  HUD_DANGER:       '#7744ff',
   HUD_NEUTRAL:      '#888888',
 };
 
