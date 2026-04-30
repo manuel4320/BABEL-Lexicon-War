@@ -231,12 +231,14 @@ function WarningBox({ level, label, detail }) {
   );
 }
 
-function WarningIcon({ warnings }) {
+function WarningIcon({ warnings, flow = 0, flowActive = false, flowCooldown = false }) {
   const proximityLevel = warnings?.proximityLevel ?? 'none';
   const lowHpLevel = warnings?.lowHpLevel ?? 'none';
   const distance = warnings?.closestEnemyDistance;
 
   const boxes = [];
+  const infos = [];
+
   if (proximityLevel !== 'none') {
     boxes.push({
       level: proximityLevel,
@@ -253,12 +255,23 @@ function WarningIcon({ warnings }) {
     });
   }
 
-  if (boxes.length === 0) return null;
+  if (flowActive) {
+    infos.push({ label: 'FLUJO·LEX', detail: 'ACTIVO', color: '#00ff88' });
+  } else if (flowCooldown) {
+    infos.push({ label: 'RECARGA·LEX', detail: null, color: '#4466ff' });
+  } else if (flow >= 70) {
+    infos.push({ label: 'FLUJO PRÓXIMO', detail: `${Math.round(flow)}%`, color: '#00ddff' });
+  }
+
+  if (boxes.length === 0 && infos.length === 0) return null;
 
   return (
     <div className="warning-stack">
       {boxes.map((box) => (
         <WarningBox key={`${box.label}-${box.detail ?? 'x'}`} level={box.level} label={box.label} detail={box.detail} />
+      ))}
+      {infos.map((info) => (
+        <InfoBox key={info.label} label={info.label} detail={info.detail} color={info.color} />
       ))}
     </div>
   );
@@ -310,12 +323,28 @@ function StatusBar({ label, value, max=100, danger=false, forceColor, flash=fals
   );
 }
 
-function CombatBottomLeft({ hp, lexHeat, lexHeatMax = 100, isOverheated, wave, swarmRemnants, warnings }) {
-  const lexHeatPct = (lexHeat / lexHeatMax) * 100;
-  const lexHeatColor = isOverheated ? "#ff4466"
-    : lexHeatPct >= 85 ? "#ff4466"
-    : lexHeatPct >= 60 ? "#ffcc00"
-    : "var(--col-active)";
+function FlowBar({ flow, active, cooldown }) {
+  const pct   = Math.max(0, Math.min(100, flow));
+  const color = active        ? '#ff2244'
+    : pct >= 75               ? '#ff7722'
+    : pct >= 50               ? '#ffcc44'
+    : pct >= 25               ? '#00ddff'
+    :                           '#4466ff';
+  const label = active ? '◈ FLUJO·LEX' : cooldown ? '· FLUJO·LEX' : 'FLUJO·LEX';
+  return (
+    <div style={S.statusBarRow}>
+      <span style={{ ...S.statusBarLabel, color: active ? '#00ff88' : undefined }}>{label}</span>
+      <div style={{ ...S.statusBarTrack, position: 'relative' }}>
+        <div style={{ ...S.statusBarFill, width: pct + '%', background: color, boxShadow: '0 0 6px ' + color,
+          opacity: cooldown ? 0.4 : 1 }} />
+        {active && <div className="flow-bar-active-pulse" style={{ position: 'absolute', inset: 0, background: color, opacity: 0.18 }} />}
+      </div>
+      <span style={{ ...S.statusBarValue, color }}>{String(Math.round(pct)).padStart(3, '0')}</span>
+    </div>
+  );
+}
+
+function CombatBottomLeft({ hp, flow = 0, flowActive = false, flowCooldown = false, wave, swarmRemnants, warnings }) {
   const lowHpLevel = warnings?.lowHpLevel ?? 'none';
   const hpForceColor = lowHpLevel === 'red'
     ? '#ff4466'
@@ -324,13 +353,39 @@ function CombatBottomLeft({ hp, lexHeat, lexHeatMax = 100, isOverheated, wave, s
       : undefined;
   return (
     <div style={S.combatBottomLeft}>
-      <StatusBar label="CASCO"      value={hp}      danger forceColor={hpForceColor} flash={lowHpLevel === 'red'} />
-      <StatusBar label="CALOR·LEX"  value={lexHeat} max={lexHeatMax} forceColor={lexHeatColor} />
+      <StatusBar label="CASCO" value={hp} danger forceColor={hpForceColor} flash={lowHpLevel === 'red'} />
+      <FlowBar flow={flow} active={flowActive} cooldown={flowCooldown} />
       <div style={S.waveBlock}>
         <span style={S.waveLabel}>OLEADA · LEXICA</span>
         <span style={S.waveNum}>{String(wave || 0).padStart(2,"0")}</span>
         <span style={S.swarmRem}>RESTOS DEL ENJAMBRE <span style={{ color:"var(--col-active)" }}>{swarmRemnants}</span></span>
       </div>
+    </div>
+  );
+}
+
+function FlowFrame() {
+  return (
+    <div className="flow-frame">
+      <div className="flow-frame-corner flow-frame-corner-tl" />
+      <div className="flow-frame-corner flow-frame-corner-tr" />
+      <div className="flow-frame-corner flow-frame-corner-bl" />
+      <div className="flow-frame-corner flow-frame-corner-br" />
+      <div className="flow-frame-scan flow-frame-scan-top" />
+      <div className="flow-frame-scan flow-frame-scan-bottom" />
+      <div className="flow-frame-caption">FLUJO · LEX · ACTIVO</div>
+    </div>
+  );
+}
+
+function InfoBox({ label, detail, color = '#00ff88' }) {
+  return (
+    <div className="info-icon" style={{ borderColor: color + '55', color, boxShadow: `0 0 14px ${color}22` }}>
+      <span className="warning-icon-mark">◈</span>
+      <span className="warning-icon-text">
+        <span className="warning-icon-title">{label}</span>
+        {detail ? <span className="warning-icon-detail">{detail}</span> : null}
+      </span>
     </div>
   );
 }
@@ -480,7 +535,7 @@ export default function HUD() {
     opponentPhraseProgress, currentPhrase, currentPhraseWordIndex,
     playerPhrasesCompleted, countdown, countdownActive, timeRemaining,
     combatEnemies, swarmRemnants, targetId,
-    lexHeat = 0, lexHeatMax = 100, isOverheated = false,
+    flow = 0, flowActive = false, flowCooldown = false,
     warnings = {},
     preCombatActive = false, preCombatStep = null,
     preCombatValue = null, preCombatMessage = '', preCombatLevel = 'yellow' } = state;
@@ -492,6 +547,7 @@ export default function HUD() {
     return (
       <div style={S.hud}>
         {showFlash && <div className="edge-flash" />}
+        {flowActive && <FlowFrame />}
         <LowHpFrame level={lowHpLevel} />
         <div className="hud-safe-zone">
           <PreCombatOverlay
@@ -502,7 +558,7 @@ export default function HUD() {
             level={preCombatLevel}
           />
           <WaveAnnouncement wave={waveNotice} />
-          <WarningIcon warnings={warnings} />
+          <WarningIcon warnings={warnings} flow={flow} flowActive={flowActive} flowCooldown={flowCooldown} />
           {/* Top-left: pilot info */}
           <div style={S.combatTopLeft}>
             <span style={S.pilotName}>KAEL · VOSS</span>
@@ -513,7 +569,7 @@ export default function HUD() {
           {/* Top-right: WPM + accuracy */}
           <CombatTopRight wpm={wpm} accuracy={accuracy} />
           {/* Bottom-left: status bars */}
-          <CombatBottomLeft hp={hp} lexHeat={lexHeat} lexHeatMax={lexHeatMax} isOverheated={isOverheated} wave={wave} swarmRemnants={swarmRemnants} warnings={warnings} />
+          <CombatBottomLeft hp={hp} flow={flow} flowActive={flowActive} flowCooldown={flowCooldown} wave={wave} swarmRemnants={swarmRemnants} warnings={warnings} />
           {/* Bottom-center: active word panel */}
           <CombatWordPanel activeWord={activeWord} animState={animState} />
           {/* Bottom-right: lexicon deck */}
@@ -529,7 +585,7 @@ export default function HUD() {
       <LowHpFrame level={lowHpLevel} />
       <div className="hud-safe-zone">
         <WaveAnnouncement wave={waveNotice} />
-        <WarningIcon warnings={warnings} />
+        <WarningIcon warnings={warnings} flow={flow} flowActive={flowActive} flowCooldown={flowCooldown} />
         <Countdown countdown={countdown} countdownActive={countdownActive} />
         {/* Top-left: pilot info */}
         <div style={S.combatTopLeft}>
