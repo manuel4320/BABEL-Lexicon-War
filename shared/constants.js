@@ -127,15 +127,15 @@ export const PHRASE_POOL_ES = [
 // --- Colores del universo BABEL ---
 export const COLORS = {
   BACKGROUND:       0x000000,
-  PLAYER:           0xaa77ff,
-  ENEMY:            0x8855ff,
-  ENEMY_TARGETED:   0xdd99ff,
-  WORD_CORRECT:     0x9966ff,
+  PLAYER:           0x00ffcc,
+  ENEMY:            0xff4466,
+  ENEMY_TARGETED:   0xffcc00,
+  WORD_CORRECT:     0x00ff88,
   WORD_INCORRECT:   0xff3333,
   WORD_PENDING:     0x888888,
-  PARTICLE:         0xaa77ff,
-  HUD_PRIMARY:      '#aa77ff',
-  HUD_DANGER:       '#7744ff',
+  PARTICLE:         0x88aaff,
+  HUD_PRIMARY:      '#00ffcc',
+  HUD_DANGER:       '#ff4466',
   HUD_NEUTRAL:      '#888888',
 };
 

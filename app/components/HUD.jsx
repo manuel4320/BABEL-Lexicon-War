@@ -82,7 +82,7 @@ function RaceBottomLeft({ flowMultiplier, playerPhrasesCompleted, opponentPhrase
           <span style={{ ...S.raceStatRowVal, color: winning ? "rgba(255,255,255,0.4)" : "#ff4466" }}>{String(oppDone).padStart(2,"0")}</span>
         </div>
         <div style={{ ...S.raceStatRow, marginTop:"0.2rem" }}>
-          <span style={{ ...S.raceStatRowLabel, color: winning ? "#9966ff" : "#ff4466", letterSpacing:"0.15em" }}>
+          <span style={{ ...S.raceStatRowLabel, color: winning ? "#00ff88" : "#ff4466", letterSpacing:"0.15em" }}>
             {winning ? "▲ DELANTE" : "▼ DETRAS"}
           </span>
         </div>
@@ -91,13 +91,13 @@ function RaceBottomLeft({ flowMultiplier, playerPhrasesCompleted, opponentPhrase
         <div style={S.raceFlowBlock}>
           <span style={S.raceFlowLabel}>MULTIPLICADOR DE FLUJO</span>
           <span style={{ ...S.raceFlowVal,
-            color: flowMultiplier>=2 ? "#9966ff" : "var(--col-active)",
-            textShadow: "0 0 16px "+(flowMultiplier>=2?"#9966ff":"var(--col-active)") }}>
+            color: flowMultiplier>=2 ? "#00ff88" : "var(--col-active)",
+            textShadow: "0 0 16px "+(flowMultiplier>=2?"#00ff88":"var(--col-active)") }}>
             ×{flowMultiplier.toFixed(1)}
           </span>
           <div style={S.raceFlowTrack}>
             <div style={{ ...S.raceFlowFill, width: flowPct+"%",
-              background: flowMultiplier>=2 ? "#9966ff" : "var(--col-active)" }} />
+              background: flowMultiplier>=2 ? "#00ff88" : "var(--col-active)" }} />
           </div>
         </div>
       )}
@@ -147,7 +147,7 @@ function RaceTimer({ timeRemaining }) {
       </span>
       <div style={S.raceTimerTrack}>
         <div style={{ ...S.raceTimerFill, width: (100-timePct)+"%",
-          background: s<=10 ? "#ff4466" : s<=20 ? "#ffcc00" : "linear-gradient(90deg,#aa77ff,#9966ff)" }} />
+          background: s<=10 ? "#ff4466" : s<=20 ? "#ffcc00" : "linear-gradient(90deg,#00ffcc,#00ff88)" }} />
       </div>
     </div>
   );
@@ -163,7 +163,7 @@ function Countdown({ countdown, countdownActive }) {
   }, [countdownActive]);
   if (!countdownActive && !showGo) return null;
   const label = showGo ? "YA!" : countdown > 0 ? String(countdown) : "";
-  const col = showGo ? "#9966ff" : "rgba(255,255,255,0.9)";
+  const col = showGo ? "#00ff88" : "rgba(255,255,255,0.9)";
   return (
     <div style={S.countdownOverlay}>
       <span style={{ ...S.countdownNum, color: col, textShadow: "0 0 60px "+col+", 0 0 120px "+col }}>
@@ -256,11 +256,11 @@ function WarningIcon({ warnings, flow = 0, flowActive = false, flowCooldown = fa
   }
 
   if (flowActive) {
-    infos.push({ label: 'FLUJO·LEX', detail: 'ACTIVO', color: '#9966ff' });
+    infos.push({ label: 'FLUJO·LEX', detail: 'ACTIVO', color: '#00ff88' });
   } else if (flowCooldown) {
     infos.push({ label: 'RECARGA·LEX', detail: null, color: '#4466ff' });
   } else if (flow >= 70) {
-    infos.push({ label: 'FLUJO PRÓXIMO', detail: `${Math.round(flow)}%`, color: '#aa77ff' });
+    infos.push({ label: 'FLUJO PRÓXIMO', detail: `${Math.round(flow)}%`, color: '#00ddff' });
   }
 
   if (boxes.length === 0 && infos.length === 0) return null;
@@ -333,7 +333,7 @@ function FlowBar({ flow, active, cooldown }) {
   const label = 'FLOW';
   return (
     <div style={S.statusBarRow}>
-      <span style={{ ...S.statusBarLabel, color: active ? '#9966ff' : 'rgba(255,255,255,0.92)' }}>{label}</span>
+      <span style={{ ...S.statusBarLabel, color: 'rgba(255,255,255,0.92)' }}>{label}</span>
       <div style={{ ...S.statusBarTrack, position: 'relative' }}>
         <div style={{ ...S.statusBarFill, width: pct + '%', background: color, boxShadow: '0 0 12px ' + color,
           opacity: cooldown ? 0.4 : 1 }} />
@@ -378,7 +378,7 @@ function FlowFrame() {
   );
 }
 
-function InfoBox({ label, detail, color = '#9966ff' }) {
+function InfoBox({ label, detail, color = '#00ff88' }) {
   return (
     <div className="info-icon" style={{ borderColor: color + '55', color, boxShadow: `0 0 14px ${color}22` }}>
       <span className="warning-icon-mark">◈</span>
@@ -415,7 +415,7 @@ function CombatWordPanel({ activeWord, animState }) {
         <span style={S.combatWordHeaderTag}>◊ ENLACE · LEXICO</span>
         <span style={S.transmitting}>● TRANSMITIENDO</span>
       </div>
-      <div style={{ ...S.combatWordBox, borderColor: animState=="wrong" ? "#ff2244" : "rgba(153,102,255,0.35)" }}>
+      <div style={{ ...S.combatWordBox, borderColor: animState=="wrong" ? "#ff2244" : "rgba(0,255,204,0.35)" }}>
         <span style={S.combatWordPrompt}>&gt;</span>
         <div style={S.combatWordLetters}>
           {word ? word.split("").map((ch, i) => {
@@ -471,8 +471,8 @@ function LexiconDeck({ combatEnemies, targetId, flowMultiplier }) {
       {flowMultiplier > 1.0 && (
         <div style={S.deckFlow}>
           <span style={S.deckFlowLabel}>MULTIPLICADOR DE FLUJO</span>
-          <span style={{ ...S.deckFlowVal, color: flowMultiplier>=2 ? "#9966ff" : "var(--col-active)",
-            textShadow: "0 0 14px "+(flowMultiplier>=2 ? "#9966ff" : "var(--col-active)") }}>
+          <span style={{ ...S.deckFlowVal, color: flowMultiplier>=2 ? "#00ff88" : "var(--col-active)",
+            textShadow: "0 0 14px "+(flowMultiplier>=2 ? "#00ff88" : "var(--col-active)") }}>
             ×{flowMultiplier.toFixed(1)}
           </span>
         </div>
@@ -620,8 +620,8 @@ const S = {
   // ── Combat top-left
   combatTopLeft: { position:"absolute", top:"1.4rem", left:"1.6rem",
     display:"flex", flexDirection:"column", gap:"0.1rem" },
-  pilotName: { fontSize:"0.92rem", fontWeight:"bold", letterSpacing:"0.22em", color:"#aa77ff" },
-  pilotSub:  { fontSize:"0.68rem", letterSpacing:"0.18em", color:"#9966ff", opacity:0.7 },
+  pilotName: { fontSize:"0.92rem", fontWeight:"bold", letterSpacing:"0.22em", color:"rgba(255,255,255,0.85)" },
+  pilotSub:  { fontSize:"0.68rem", letterSpacing:"0.18em", color:"var(--col-active)", opacity:0.7 },
 
   // ── Combat ticker
   ticker: { position:"absolute", top:0, left:"50%", transform:"translateX(-50%)",
@@ -629,14 +629,14 @@ const S = {
     display:"flex", alignItems:"center" },
   tickerInner: { width:"100%", overflow:"hidden" },
   tickerText: { display:"inline-block", whiteSpace:"nowrap", fontSize:"0.62rem",
-    letterSpacing:"0.22em", color:"rgba(153,102,255,0.55)",
+    letterSpacing:"0.22em", color:"rgba(0,255,204,0.55)",
     animation:"tickerScroll 22s linear infinite" },
 
   // ── Combat top-right
   combatTopRight: { position:"absolute", top:"1.4rem", right:"1.6rem",
     display:"flex", flexDirection:"row", alignItems:"flex-end", gap:"1.6rem" },
   combatStatBlock: { display:"flex", flexDirection:"column", alignItems:"flex-start" },
-  combatBigNum: { fontSize:"3.4rem", fontWeight:"bold", letterSpacing:"-0.03em", lineHeight:1, transition:"color 0.4s", color:"#9966ff" },
+  combatBigNum: { fontSize:"3.4rem", fontWeight:"bold", letterSpacing:"-0.03em", lineHeight:1, transition:"color 0.4s" },
   combatBigNum2: { fontSize:"2.2rem", fontWeight:"bold", letterSpacing:"-0.02em", lineHeight:1, color:"rgba(255,255,255,0.5)" },
   combatAccRow: { display:"flex", alignItems:"baseline", gap:"0.05rem" },
   combatAccPct: { fontSize:"1.05rem", color:"rgba(255,255,255,0.35)" },
@@ -656,7 +656,7 @@ const S = {
     borderRadius:"4px", overflow:"hidden", minWidth:"130px", border:"1px solid rgba(255,255,255,0.2)"
   },
   statusBarFill:  { height:"100%", borderRadius:"3px", transition:"width 0.3s ease" },
-  statusBarValue: { fontSize:"0.94rem", fontWeight:"bold", letterSpacing:"0.04em", width:"2.8rem", textAlign:"right", textShadow:"0 0 8px currentColor", color:"#9966ff" },
+  statusBarValue: { fontSize:"0.94rem", fontWeight:"bold", letterSpacing:"0.04em", width:"2.8rem", textAlign:"right", textShadow:"0 0 8px currentColor" },
   waveBlock: { marginTop:"0.8rem", display:"flex", flexDirection:"column", gap:"0.2rem" },
   waveLabel: { fontSize:"0.56rem", letterSpacing:"0.28em", color:"rgba(255,255,255,0.22)" },
   waveNum:   { fontSize:"3.1rem", fontWeight:"bold", color:"rgba(255,255,255,0.85)", letterSpacing:"-0.02em", lineHeight:1 },
@@ -672,7 +672,7 @@ const S = {
   combatWordBox: { display:"flex", alignItems:"center", gap:"0.8rem", padding:"0.65rem 1.2rem",
     border:"1px solid rgba(0,255,204,0.35)", background:"rgba(0,0,0,0.55)",
     minWidth:"350px", justifyContent:"center", transition:"border-color 0.15s" },
-  combatWordPrompt: { fontSize:"1.5rem", color:"rgba(153,102,255,0.4)", userSelect:"none" },
+  combatWordPrompt: { fontSize:"1.5rem", color:"rgba(0,255,204,0.4)", userSelect:"none" },
   combatWordLetters: { display:"flex", gap:"0", alignItems:"baseline" },
   combatLetter: { display:"inline-block", fontSize:"2.2rem", fontWeight:"bold",
     letterSpacing:"0.06em", width:"1.25ch", textAlign:"center", lineHeight:1.2,
@@ -680,7 +680,7 @@ const S = {
   combatWordMeta: { display:"flex", alignItems:"center", gap:"0.5rem", fontSize:"0.58rem",
     flexWrap:"wrap", justifyContent:"center",
     letterSpacing:"0.15em", color:"rgba(255,255,255,0.28)" },
-  combatMetaTag: { color:"#9966ff", fontWeight:"bold" },
+  combatMetaTag: { color:"rgba(255,255,255,0.45)", fontWeight:"bold" },
   combatMetaDivider: { opacity:0.25 },
   combatMetaItem: { color:"rgba(255,255,255,0.28)" },
 
@@ -691,12 +691,12 @@ const S = {
   deckHeader: { display:"flex", justifyContent:"space-between", alignItems:"center",
     padding:"0 1rem 0.6rem", borderBottom:"1px solid rgba(255,255,255,0.06)" },
   deckHeaderLabel: { fontSize:"0.58rem", letterSpacing:"0.25em", color:"rgba(255,255,255,0.3)" },
-  deckHeaderCount: { fontSize:"0.9rem", color:"#9966ff", fontWeight:"bold" },
+  deckHeaderCount: { fontSize:"0.9rem", color:"var(--col-active)", fontWeight:"bold" },
   deckList: { display:"flex", flexDirection:"column", padding:"0.3rem 0" },
   deckRow: { display:"flex", alignItems:"center", gap:"0.45rem", padding:"0.3rem 1rem",
     fontSize:"0.86rem", letterSpacing:"0.04em" },
-  deckRowActive: { background:"rgba(153,102,255,0.05)" },
-  deckRowBullet: { width:"1rem", fontSize:"0.72rem", color:"#9966ff", flexShrink:0 },
+  deckRowActive: { background:"rgba(0,255,204,0.05)" },
+  deckRowBullet: { width:"1rem", fontSize:"0.72rem", color:"var(--col-active)", flexShrink:0 },
   deckRowWord: { flex:1, transition:"color 0.2s", color:"#9966ff" },
   deckRowDistWrap: { display:"inline-flex", alignItems:"center", gap:"0.3rem", minWidth:"3.8rem", justifyContent:"flex-end" },
   deckRowDist: { fontSize:"0.66rem", color:"rgba(255,255,255,0.25)", letterSpacing:"0.05em" },
@@ -721,12 +721,12 @@ const S = {
   raceStatPanelLabel: { fontSize:"0.56rem", letterSpacing:"0.28em", color:"rgba(255,255,255,0.2)", marginBottom:"0.2rem" },
   raceStatRow: { display:"flex", justifyContent:"space-between", alignItems:"baseline", gap:"1rem" },
   raceStatRowLabel: { fontSize:"0.62rem", letterSpacing:"0.2em", color:"rgba(255,255,255,0.25)" },
-  raceStatRowVal: { fontSize:"1.2rem", fontWeight:"bold", letterSpacing:"0.04em", color:"#9966ff" },
+  raceStatRowVal: { fontSize:"1.2rem", fontWeight:"bold", letterSpacing:"0.04em" },
 
   // ── Race flow block (in bottom-left)
   raceFlowBlock: { marginTop:"0.8rem", display:"flex", flexDirection:"column", gap:"0.2rem" },
   raceFlowLabel: { fontSize:"0.52rem", letterSpacing:"0.22em", color:"rgba(255,255,255,0.2)" },
-  raceFlowVal:   { fontSize:"1.9rem", fontWeight:"bold", letterSpacing:"-0.01em", lineHeight:1, color:"#9966ff" },
+  raceFlowVal:   { fontSize:"1.9rem", fontWeight:"bold", letterSpacing:"-0.01em", lineHeight:1 },
   raceFlowTrack: { width:"100%", height:"2px", background:"rgba(255,255,255,0.07)", borderRadius:"1px", overflow:"hidden" },
   raceFlowFill:  { height:"100%", borderRadius:"1px", transition:"width 0.3s ease" },
 
