@@ -74,7 +74,7 @@ function getProjData(type) {
 }
 
 export class Projectile extends Entity {
-  constructor(origin, target, onHit, type = PROJECTILE_TYPES.STANDARD) {
+  constructor(origin, target, onHit, type = PROJECTILE_TYPES.STANDARD, colorOverride = null) {
     super();
     this._target   = target;
     this._onHit    = onHit;
@@ -93,25 +93,34 @@ export class Projectile extends Entity {
 
     const d = getProjData(type);
 
-    // core rod
-    const core = new THREE.Mesh(d.coreGeo, d.coreMat);
+    let coreMat, glowMat, tipMat, trailMat;
+    if (colorOverride) {
+      const col = new THREE.Color(colorOverride);
+      coreMat  = new THREE.MeshBasicMaterial({ color: col });
+      glowMat  = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: cfg.glowOp, depthWrite: false, blending: THREE.AdditiveBlending });
+      tipMat   = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      trailMat = new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: cfg.trailOp, depthWrite: false, blending: THREE.AdditiveBlending });
+      this._ownsMats = [coreMat, glowMat, tipMat, trailMat];
+    } else {
+      coreMat = d.coreMat; glowMat = d.glowMat; tipMat = d.tipMat; trailMat = d.trailMat;
+      this._ownsMats = null;
+    }
+
+    const core = new THREE.Mesh(d.coreGeo, coreMat);
     core.layers.enable(BLOOM_LAYER);
     this.mesh.add(core);
 
-    // outer glow (tapered)
-    const glow = new THREE.Mesh(d.glowGeo, d.glowMat);
+    const glow = new THREE.Mesh(d.glowGeo, glowMat);
     glow.layers.enable(BLOOM_LAYER);
     this.mesh.add(glow);
 
-    // nose tip
-    const tip = new THREE.Mesh(d.tipGeo, d.tipMat);
+    const tip = new THREE.Mesh(d.tipGeo, tipMat);
     tip.position.z = -(cfg.coreLen / 2 + cfg.tipR * 0.5);
     tip.layers.enable(BLOOM_LAYER);
     this.mesh.add(tip);
 
-    // trail line
     this._trailGeo  = new THREE.BufferGeometry().setFromPoints(this._trailPts);
-    this._trailLine = new THREE.Line(this._trailGeo, d.trailMat);
+    this._trailLine = new THREE.Line(this._trailGeo, trailMat);
     this._trailLine.layers.enable(BLOOM_LAYER);
   }
 
@@ -119,6 +128,7 @@ export class Projectile extends Entity {
   removeFromScene(scene) {
     scene.remove(this.mesh); scene.remove(this._trailLine);
     this._trailGeo.dispose();
+    if (this._ownsMats) this._ownsMats.forEach(m => m.dispose());
   }
 
   update(delta) {
