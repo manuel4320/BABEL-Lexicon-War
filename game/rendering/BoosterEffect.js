@@ -13,6 +13,9 @@ let _starTex  = null;
 const _boostDark  = new THREE.Color(0x102a7a);
 const _boostMid   = new THREE.Color(0x4d7eff);
 const _boostLight = new THREE.Color(0xb8f2ff);
+const _flowDark   = new THREE.Color(0x2b0b6d);
+const _flowMid    = new THREE.Color(0x7744ff);
+const _flowLight  = new THREE.Color(0xe0c8ff);
 const _tmpColorA  = new THREE.Color();
 const _tmpColorB  = new THREE.Color();
 const _tmpColorC  = new THREE.Color();
@@ -342,7 +345,7 @@ export class BoosterEffect {
     this._light.position.copy(cfg.lightOffset);
   }
 
-  update(deltaTime, isAccelerating, visualScale = 1, ringScale = 1) {
+  update(deltaTime, isAccelerating, visualScale = 1, ringScale = 1, flowActive = false) {
     this._t += deltaTime;
 
     const t   = this._t;
@@ -369,14 +372,23 @@ export class BoosterEffect {
     // Decay letter burst (~0.18 s half-life)
     this._letterBurst = Math.max(0, this._letterBurst - deltaTime * 4.5);
     const lb = this._letterBurst; // 0..1
-    const blueMix = THREE.MathUtils.clamp(0.20 + s * 0.45 + flicker * 0.12 + lb * 0.18, 0, 1);
+    const baseMix = THREE.MathUtils.clamp(0.20 + s * 0.45 + flicker * 0.12 + lb * 0.18, 0, 1);
     const glowMix = THREE.MathUtils.clamp(0.35 + s * 0.50 + lb * 0.22, 0, 1);
+    const flowMix = THREE.MathUtils.clamp(0.55 + s * 0.30 + flicker * 0.10 + lb * 0.25, 0, 1);
 
-    _tmpColorA.lerpColors(_boostDark, _boostMid, blueMix);
-    _tmpColorB.lerpColors(_boostMid, _boostLight, glowMix);
-    _tmpColorC.lerpColors(_boostDark, _boostLight, THREE.MathUtils.clamp(0.45 + s * 0.30 + flicker * 0.10, 0, 1));
-    _tmpColorD.lerpColors(_boostDark, _boostMid, THREE.MathUtils.clamp(0.30 + s * 0.42, 0, 1));
-    _tmpColorE.lerpColors(_boostMid, _boostLight, THREE.MathUtils.clamp(0.50 + s * 0.30 + lb * 0.10, 0, 1));
+    if (flowActive) {
+      _tmpColorA.lerpColors(_flowDark, _flowMid, flowMix);
+      _tmpColorB.lerpColors(_flowMid, _flowLight, THREE.MathUtils.clamp(0.45 + s * 0.35 + lb * 0.20, 0, 1));
+      _tmpColorC.lerpColors(_flowDark, _flowLight, THREE.MathUtils.clamp(0.35 + s * 0.35 + flicker * 0.10, 0, 1));
+      _tmpColorD.lerpColors(_flowDark, _flowMid, THREE.MathUtils.clamp(0.48 + s * 0.38, 0, 1));
+      _tmpColorE.lerpColors(_flowMid, _flowLight, THREE.MathUtils.clamp(0.50 + s * 0.28 + lb * 0.12, 0, 1));
+    } else {
+      _tmpColorA.lerpColors(_boostDark, _boostMid, baseMix);
+      _tmpColorB.lerpColors(_boostMid, _boostLight, glowMix);
+      _tmpColorC.lerpColors(_boostDark, _boostLight, THREE.MathUtils.clamp(0.45 + s * 0.30 + flicker * 0.10, 0, 1));
+      _tmpColorD.lerpColors(_boostDark, _boostMid, THREE.MathUtils.clamp(0.30 + s * 0.42, 0, 1));
+      _tmpColorE.lerpColors(_boostMid, _boostLight, THREE.MathUtils.clamp(0.50 + s * 0.30 + lb * 0.10, 0, 1));
+    }
 
     this._bodyMat.color.copy(_tmpColorA);
     this._ringMat.color.copy(_tmpColorD);
