@@ -3,59 +3,55 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>[]{}|/\\';
 
-function ScrambleText({ text, isScrambling, onComplete, delay = 0, duration = 1500 }) {
-  const [displayText, setDisplayText] = useState('');
-  const [started, setStarted] = useState(false);
+function ScrambleText({ text, isScrambling, delay = 0, duration = 1500 }) {
+  const [displayText, setDisplayText] = useState(() => 
+    text.split('').map(c => c === ' ' ? ' ' : CHARS[Math.floor(Math.random() * CHARS.length)]).join('')
+  );
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    if (!isScrambling) return;
-    
-    const startTimer = setTimeout(() => {
-      setStarted(true);
+    if (!isScrambling || isComplete) return;
+
+    const startDelay = setTimeout(() => {
+      const iterations = 10;
+      const intervalTime = Math.max(20, duration / (text.length * iterations));
+      let currentIndex = 0;
+      let iteration = 0;
+
+      const interval = setInterval(() => {
+        setDisplayText(
+          text
+            .split('')
+            .map((char, index) => {
+              if (char === ' ') return ' ';
+              if (index < currentIndex) return text[index];
+              return CHARS[Math.floor(Math.random() * CHARS.length)];
+            })
+            .join('')
+        );
+
+        iteration++;
+        if (iteration >= iterations) {
+          iteration = 0;
+          currentIndex++;
+        }
+
+        if (currentIndex > text.length) {
+          clearInterval(interval);
+          setDisplayText(text);
+          setIsComplete(true);
+        }
+      }, intervalTime);
+
+      return () => clearInterval(interval);
     }, delay);
 
-    return () => clearTimeout(startTimer);
-  }, [isScrambling, delay]);
-
-  useEffect(() => {
-    if (!started) return;
-
-    const iterations = 12;
-    const intervalTime = duration / (text.length * iterations);
-    let currentIndex = 0;
-    let iteration = 0;
-
-    const interval = setInterval(() => {
-      setDisplayText(
-        text
-          .split('')
-          .map((char, index) => {
-            if (char === ' ') return ' ';
-            if (index < currentIndex) return text[index];
-            return CHARS[Math.floor(Math.random() * CHARS.length)];
-          })
-          .join('')
-      );
-
-      iteration++;
-      if (iteration >= iterations) {
-        iteration = 0;
-        currentIndex++;
-      }
-
-      if (currentIndex > text.length) {
-        clearInterval(interval);
-        setDisplayText(text);
-        onComplete?.();
-      }
-    }, intervalTime);
-
-    return () => clearInterval(interval);
-  }, [started, text, duration, onComplete]);
+    return () => clearTimeout(startDelay);
+  }, [isScrambling, text, duration, delay, isComplete]);
 
   return (
     <span style={{ fontFamily: "'Orbitron', 'Courier New', monospace" }}>
-      {displayText || (isScrambling ? '' : text)}
+      {displayText}
     </span>
   );
 }
@@ -63,23 +59,27 @@ function ScrambleText({ text, isScrambling, onComplete, delay = 0, duration = 15
 export default function VantaStudios({ onComplete, duration = 4000 }) {
   const [phase, setPhase] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const onCompleteRef = React.useRef(onComplete);
+  
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
-    // Phase 0: Initial fade in (handled by motion)
     // Phase 1: Start scramble animation
-    const phase1Timer = setTimeout(() => setPhase(1), 500);
+    const phase1Timer = setTimeout(() => setPhase(1), 300);
     
     // Phase 2: Show tagline
-    const phase2Timer = setTimeout(() => setPhase(2), 2200);
+    const phase2Timer = setTimeout(() => setPhase(2), 1800);
     
     // Phase 3: Fade out
     const phase3Timer = setTimeout(() => {
       setIsVisible(false);
-    }, duration - 800);
+    }, duration - 600);
 
     // Complete
     const completeTimer = setTimeout(() => {
-      onComplete?.();
+      onCompleteRef.current?.();
     }, duration);
 
     return () => {
@@ -88,7 +88,7 @@ export default function VantaStudios({ onComplete, duration = 4000 }) {
       clearTimeout(phase3Timer);
       clearTimeout(completeTimer);
     };
-  }, [duration, onComplete]);
+  }, [duration]);
 
   return (
     <AnimatePresence>
