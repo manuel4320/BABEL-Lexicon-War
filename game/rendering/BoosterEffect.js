@@ -333,12 +333,14 @@ export class BoosterEffect {
     this._light.position.copy(cfg.lightOffset);
   }
 
-  update(deltaTime, isAccelerating) {
+  update(deltaTime, isAccelerating, visualScale = 1, ringScale = 1) {
     this._t += deltaTime;
 
     const t   = this._t;
     const cfg = this._cfg;
     if (!cfg) return;
+    const sizeMult = Math.max(0.75, Number(visualScale) || 1);
+    const ringMult = Math.max(0.75, Number(ringScale) || 1);
 
     // Multi-frequency flicker
     const f1 = Math.sin(t * 13.1) * 0.5 + 0.5;
@@ -394,8 +396,8 @@ export class BoosterEffect {
     this._root.position.z = (cfg.localPosition.z ?? 0) - s * 0.18;
 
     // Exhaust cone — grows with burst and lateral movement
-    const coneW = cfg.bodyRadius * (0.45 + s * 0.70) * burstMult;
-    const coneL = cfg.bodyLength * (0.65 + s * 1.0)  * (1.0 + lb * 1.60 + velBoost * 0.60);
+    const coneW = cfg.bodyRadius * (0.45 + s * 0.70) * burstMult * sizeMult;
+    const coneL = cfg.bodyLength * (0.65 + s * 1.0)  * (1.0 + lb * 1.60 + velBoost * 0.60) * sizeMult;
     this._body.scale.set(coneW, coneW, coneL);
     this._bodyMat.opacity = Math.min(0.95, (0.08 + s * 0.32) * (1.0 + lb * 0.80));
     this._body.rotation.z = lateral * 0.55;
@@ -403,26 +405,26 @@ export class BoosterEffect {
 
     // Nozzle ring — bursts wider on correct letter, faster spin when banking
     const ringBreath  = 1.0 + Math.sin(t * 4.8) * 0.04 + s * 0.15;
-    const rr = (cfg.ringRadius ?? cfg.bodyRadius * 1.8) * ringBreath * (1.0 + lb * 1.40 + velBoost * 0.40);
+    const rr = (cfg.ringRadius ?? cfg.bodyRadius * 1.8) * ringBreath * (1.0 + lb * 1.40 + velBoost * 0.40) * sizeMult * ringMult;
     this._ring.scale.setScalar(rr);
     this._ringMat.opacity = Math.min(1.0, (0.55 + s * 0.40 + flicker * 0.10) * (1.0 + lb * 1.40));
     this._ring.rotation.z += deltaTime * (0.8 + s * 1.5 + Math.abs(lateral) * 2.0);
 
     // Outer halo — circular glow, expands on burst
-    const haloScale = cfg.flameSize * (0.65 + s * 0.55 + flicker * 0.12) * burstMult;
+    const haloScale = cfg.flameSize * (0.65 + s * 0.55 + flicker * 0.12) * burstMult * sizeMult;
     this._flame.scale.setScalar(haloScale);
     this._flameMat.opacity = Math.min(0.95, (0.22 + s * 0.55 + flicker * 0.08) * (1.0 + lb * 2.00));
 
     // Inner core — tight, high-frequency flicker, intense on burst
     const coreF = Math.sin(t * 19.3) * 0.5 + 0.5;
     const coreFactor = 0.55 + s * 0.40 + coreF * 0.08;
-    this._inner.scale.setScalar(cfg.innerSize * coreFactor * (0.90 + Math.abs(lateral) * 0.12) * (1.0 + lb * 2.20));
+    this._inner.scale.setScalar(cfg.innerSize * coreFactor * (0.90 + Math.abs(lateral) * 0.12) * (1.0 + lb * 2.20) * sizeMult);
     this._innerMat.opacity = Math.min(1.0, (0.70 + s * 0.36 + coreF * 0.05) * (1.0 + lb * 1.60));
 
     // Star burst — spikes on letter hit
     if (this._showStarSprite) {
       const starPulse = (0.30 + s * 0.42 + flicker * 0.08) * (1.0 + lb * 3.00);
-      this._star.scale.setScalar(cfg.starSize * starPulse);
+      this._star.scale.setScalar(cfg.starSize * starPulse * sizeMult);
       this._starMat.opacity = isAccelerating
         ? Math.min(1.0, (0.28 + s * 0.32 + flicker * 0.06) * (1.0 + lb * 2.80))
         : Math.min(1.0, (0.08 + s * 0.14 + flicker * 0.04) * (1.0 + lb * 2.80));

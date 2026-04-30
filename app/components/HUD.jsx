@@ -325,17 +325,17 @@ function StatusBar({ label, value, max=100, danger=false, forceColor, flash=fals
 
 function FlowBar({ flow, active, cooldown }) {
   const pct   = Math.max(0, Math.min(100, flow));
-  const color = active        ? '#ff2244'
-    : pct >= 75               ? '#ff7722'
-    : pct >= 50               ? '#ffcc44'
-    : pct >= 25               ? '#00ddff'
-    :                           '#4466ff';
-  const label = active ? '◈ FLUJO·LEX' : cooldown ? '· FLUJO·LEX' : 'FLUJO·LEX';
+  const color = active        ? '#00ff88'
+    : pct >= 75               ? '#00ffaa'
+    : pct >= 50               ? '#00e6ff'
+    : pct >= 25               ? '#22bbff'
+    :                           '#4488ff';
+  const label = 'FLOW';
   return (
     <div style={S.statusBarRow}>
-      <span style={{ ...S.statusBarLabel, color: active ? '#00ff88' : undefined }}>{label}</span>
+      <span style={{ ...S.statusBarLabel, color: active ? '#00ff88' : 'rgba(255,255,255,0.92)' }}>{label}</span>
       <div style={{ ...S.statusBarTrack, position: 'relative' }}>
-        <div style={{ ...S.statusBarFill, width: pct + '%', background: color, boxShadow: '0 0 6px ' + color,
+        <div style={{ ...S.statusBarFill, width: pct + '%', background: color, boxShadow: '0 0 12px ' + color,
           opacity: cooldown ? 0.4 : 1 }} />
         {active && <div className="flow-bar-active-pulse" style={{ position: 'absolute', inset: 0, background: color, opacity: 0.18 }} />}
       </div>
@@ -353,7 +353,7 @@ function CombatBottomLeft({ hp, flow = 0, flowActive = false, flowCooldown = fal
       : undefined;
   return (
     <div style={S.combatBottomLeft}>
-      <StatusBar label="CASCO" value={hp} danger forceColor={hpForceColor} flash={lowHpLevel === 'red'} />
+      <StatusBar label="VIDA" value={hp} danger forceColor={hpForceColor} flash={lowHpLevel === 'red'} />
       <FlowBar flow={flow} active={flowActive} cooldown={flowCooldown} />
       <div style={S.waveBlock}>
         <span style={S.waveLabel}>OLEADA · LEXICA</span>
@@ -645,11 +645,18 @@ const S = {
   // ── Combat bottom-left
   combatBottomLeft: { position:"absolute", bottom:"1.8rem", left:"1.6rem",
     display:"flex", flexDirection:"column", gap:"0.65rem", minWidth:"220px" },
-  statusBarRow: { display:"flex", alignItems:"center", gap:"0.7rem" },
-  statusBarLabel: { fontSize:"0.62rem", letterSpacing:"0.22em", color:"rgba(255,255,255,0.35)", width:"5.8rem" },
-  statusBarTrack: { flex:1, height:"5px", background:"rgba(255,255,255,0.07)", borderRadius:"3px", overflow:"hidden", minWidth:"110px" },
-  statusBarFill:  { height:"100%", borderRadius:"2px", transition:"width 0.3s ease" },
-  statusBarValue: { fontSize:"0.86rem", fontWeight:"bold", letterSpacing:"0.04em", width:"2.8rem", textAlign:"right" },
+  statusBarRow: {
+    display:"flex", alignItems:"center", gap:"0.7rem",
+    background:"rgba(0,0,0,0.42)", border:"1px solid rgba(255,255,255,0.12)",
+    padding:"0.28rem 0.5rem", boxShadow:"0 0 12px rgba(0,0,0,0.35)"
+  },
+  statusBarLabel: { fontSize:"0.74rem", fontWeight:"bold", letterSpacing:"0.18em", color:"rgba(255,255,255,0.9)", width:"5.8rem" },
+  statusBarTrack: {
+    flex:1, height:"8px", background:"rgba(255,255,255,0.14)",
+    borderRadius:"4px", overflow:"hidden", minWidth:"130px", border:"1px solid rgba(255,255,255,0.2)"
+  },
+  statusBarFill:  { height:"100%", borderRadius:"3px", transition:"width 0.3s ease" },
+  statusBarValue: { fontSize:"0.94rem", fontWeight:"bold", letterSpacing:"0.04em", width:"2.8rem", textAlign:"right", textShadow:"0 0 8px currentColor" },
   waveBlock: { marginTop:"0.8rem", display:"flex", flexDirection:"column", gap:"0.2rem" },
   waveLabel: { fontSize:"0.56rem", letterSpacing:"0.28em", color:"rgba(255,255,255,0.22)" },
   waveNum:   { fontSize:"3.1rem", fontWeight:"bold", color:"rgba(255,255,255,0.85)", letterSpacing:"-0.02em", lineHeight:1 },
