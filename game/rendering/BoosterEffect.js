@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+﻿import * as THREE from 'three';
 import { BLOOM_LAYER } from '../../shared/constants.js';
 import { getQualityProfile } from '../../shared/qualitySettings.js';
 
@@ -49,8 +49,6 @@ function _buildInnerTexture() {
   return tex;
 }
 
-// Star/cross burst — 4-axis spike pattern with soft core.
-// Produces the distinctive lens-flare cross when bloom radius is high.
 function _buildStarTexture() {
   const size = 512;
   const canvas = document.createElement('canvas');
@@ -75,14 +73,11 @@ function _buildStarTexture() {
     ctx.restore();
   };
 
-  // Main cross (horizontal + vertical)
   drawStreak(0,             size * 0.49, size * 0.024);
   drawStreak(Math.PI / 2,   size * 0.49, size * 0.024);
-  // Diagonal cross — shorter, softer
   drawStreak(Math.PI / 4,   size * 0.37, size * 0.015);
   drawStreak(-Math.PI / 4,  size * 0.37, size * 0.015);
 
-  // Soft core glow on top
   const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.11);
   g.addColorStop(0,   'rgba(255,255,255,1)');
   g.addColorStop(0.5, 'rgba(255,255,255,0.85)');
@@ -100,7 +95,7 @@ function _getFlame() { return (_flameTex ??= _buildFlameTexture()); }
 function _getInner() { return (_innerTex  ??= _buildInnerTexture()); }
 function _getStar()  { return (_starTex   ??= _buildStarTexture());  }
 
-// Shared cone geometry — identical for every BoosterEffect instance.
+// Shared exhaust cone — base at Z=0 (nozzle mouth), tip at +Z (behind ship toward camera).
 let _coneGeo = null;
 function _getConeGeo() {
   if (_coneGeo) return _coneGeo;
@@ -110,37 +105,46 @@ function _getConeGeo() {
   return _coneGeo;
 }
 
+// Shared nozzle ring — TorusGeometry in XY plane (faces Z by default).
+let _ringGeo = null;
+function _getRingGeo() {
+  if (_ringGeo) return _ringGeo;
+  _ringGeo = new THREE.TorusGeometry(1, 0.09, 8, 32);
+  return _ringGeo;
+}
+
 // --------------------------------------------------------------------------
 // Ship preset configs
 // --------------------------------------------------------------------------
 
 export const SHIP_BOOSTER_CONFIGS = {
 
-  // spaceshipnew.glb  |  targetLength 3.8  |  warm orange emissive on hull
+  // spaceshipnew.glb  |  targetLength 3.8
   combatPlayer: {
-    // lowered slightly (y) and pulled a bit back (z)
-    localPosition: new THREE.Vector3(0, -0.25, 1.55),
-    bodyRadius:    0.18,
-    bodyLength:    0.70,
-    flameSize:     1.40,
-    innerSize:     0.55,
-    starSize:      2.20,
-    lightColor:    0x66bbff,
-    lightIntens:   5.5,
-    lightDist:     10.0,
+    localPosition: new THREE.Vector3(0, -0.18, 2.10),
+    bodyRadius:    0.14,
+    bodyLength:    1.20,
+    ringRadius:    0.26,
+    flameSize:     0.95,
+    innerSize:     0.42,
+    starSize:      1.10,
+    lightColor:    0xaa44ff,
+    lightIntens:   9.0,
+    lightDist:     16.0,
     lightOffset:   new THREE.Vector3(0, 0, 0.35),
-    bodyColor:     0x88ccff,
-    flameColor:    0x44aaff,
-    innerColor:    0xddf0ff,
-    starColor:     0x66ccff,
+    bodyColor:     0xcc55ff,
+    flameColor:    0xaa33ff,
+    innerColor:    0xeeccff,
+    starColor:     0xbb44ff,
+    ringColor:     0xaa33ff,
   },
 
-  // spaceship.glb  |  targetLength 5.0  |  warm orange glow on hull
+  // spaceship.glb  |  targetLength 5.0
   racingPlayer: {
-    // lower racer booster to sit under hull
-    localPosition: new THREE.Vector3(0, -0.18, 2.25),
+    localPosition: new THREE.Vector3(0, -0.34, 2.25),
     bodyRadius:    0.22,
     bodyLength:    0.88,
+    ringRadius:    0.32,
     flameSize:     1.85,
     innerSize:     0.75,
     starSize:      2.90,
@@ -152,13 +156,15 @@ export const SHIP_BOOSTER_CONFIGS = {
     flameColor:    0xff8822,
     innerColor:    0xfff0dd,
     starColor:     0xffbb55,
+    ringColor:     0xffaa33,
   },
 
-  // spaceship__low_poly.glb  |  targetLength 3.2  |  red hull emissive
+  // spaceship__low_poly.glb  |  targetLength 3.2
   racingOpponent: {
     localPosition: new THREE.Vector3(0, -0.16, 1.38),
     bodyRadius:    0.16,
     bodyLength:    0.65,
+    ringRadius:    0.24,
     flameSize:     1.50,
     innerSize:     0.60,
     starSize:      2.35,
@@ -170,6 +176,7 @@ export const SHIP_BOOSTER_CONFIGS = {
     flameColor:    0xff3311,
     innerColor:    0xffd0c0,
     starColor:     0xff6644,
+    ringColor:     0xff4422,
   },
 };
 
@@ -182,20 +189,26 @@ export class BoosterEffect {
     this._t               = 0;
     this._currentStrength = 0.28;
     this._cfg             = null;
+    this._prevShipPos     = new THREE.Vector3();
+    this._hasPrevShipPos  = false;
+    this._prevShipYaw     = 0;
+    this._dynamicLateral  = 0;
+
+    // Letter hit burst — decays quickly after triggerLetterHit() call.
+    this._letterBurst     = 0;
 
     this._root = new THREE.Object3D();
     this._root.name = 'BoosterEffect';
 
-    // Exhaust cone body — shared geometry across all BoosterEffect instances.
+    // Exhaust cone — DoubleSide so it renders from outside and inside.
     const coneGeo = _getConeGeo();
-
     this._bodyMat = new THREE.MeshBasicMaterial({
       color:       0xffffff,
       transparent: true,
       opacity:     0.35,
       blending:    THREE.AdditiveBlending,
       depthWrite:  false,
-      side:        THREE.BackSide,
+      side:        THREE.DoubleSide,
     });
     this._body = new THREE.Mesh(coneGeo, this._bodyMat);
     this._body.castShadow = false;
@@ -203,12 +216,26 @@ export class BoosterEffect {
     this._body.layers.enable(BLOOM_LAYER);
     this._root.add(this._body);
 
-    // Outer flame halo sprite
+    // Nozzle ring — glowing torus at engine mouth.
+    this._ringMat = new THREE.MeshBasicMaterial({
+      color:       0xffffff,
+      transparent: true,
+      opacity:     0.90,
+      blending:    THREE.AdditiveBlending,
+      depthWrite:  false,
+    });
+    this._ring = new THREE.Mesh(_getRingGeo(), this._ringMat);
+    this._ring.castShadow = false;
+    this._ring.receiveShadow = false;
+    this._ring.layers.enable(BLOOM_LAYER);
+    this._root.add(this._ring);
+
+    // Outer halo sprite — circular glow at nozzle mouth.
     this._flameMat = new THREE.SpriteMaterial({
       map:         _getFlame(),
       color:       0xffffff,
       transparent: true,
-      opacity:     0.72,
+      opacity:     0.70,
       blending:    THREE.AdditiveBlending,
       depthWrite:  false,
     });
@@ -216,7 +243,7 @@ export class BoosterEffect {
     this._flame.layers.enable(BLOOM_LAYER);
     this._root.add(this._flame);
 
-    // Hot-core sprite
+    // Hot-core sprite.
     this._innerMat = new THREE.SpriteMaterial({
       map:         _getInner(),
       color:       0xffffff,
@@ -229,12 +256,12 @@ export class BoosterEffect {
     this._inner.layers.enable(BLOOM_LAYER);
     this._root.add(this._inner);
 
-    // Star/cross burst sprite — driven by bloom for wide spike glow
+    // Star burst sprite — subtle bloom accent.
     this._starMat = new THREE.SpriteMaterial({
       map:         _getStar(),
       color:       0xffffff,
       transparent: true,
-      opacity:     0.85,
+      opacity:     0.45,
       blending:    THREE.AdditiveBlending,
       depthWrite:  false,
       rotation:    0,
@@ -247,9 +274,8 @@ export class BoosterEffect {
     this._light = new THREE.PointLight(0xffffff, 1, 8);
     this._root.add(this._light);
 
-    // Quality-driven: skip costly star-burst sprite on LOW tier.
     const profile = getQualityProfile();
-    this._lightMult     = profile.boosterLightMult;
+    this._lightMult      = profile.boosterLightMult;
     this._showStarSprite = profile.boosterStarSprite;
     if (!this._showStarSprite) this._star.visible = false;
 
@@ -263,7 +289,15 @@ export class BoosterEffect {
   attachToShip(shipGroup) {
     if (this._root.parent) this._root.parent.remove(this._root);
     shipGroup.add(this._root);
-    this._shipGroup = shipGroup; // keep ref to respond to lateral motion
+    this._shipGroup = shipGroup;
+    this._hasPrevShipPos = false;
+    this._prevShipYaw = shipGroup.rotation.y || 0;
+  }
+
+  // Call this when the player types a correct letter.
+  // intensity: 0..1, controls burst magnitude.
+  triggerLetterHit(intensity = 1.0) {
+    this._letterBurst = Math.min(1.0, (this._letterBurst + intensity * 0.9));
   }
 
   setConfig(cfg) {
@@ -274,18 +308,23 @@ export class BoosterEffect {
     this._body.scale.set(cfg.bodyRadius, cfg.bodyRadius, cfg.bodyLength);
     this._bodyMat.color.set(cfg.bodyColor);
 
+    const rr = cfg.ringRadius ?? cfg.bodyRadius * 1.8;
+    this._ring.scale.setScalar(rr);
+    this._ring.position.set(0, 0, 0);
+    this._ringMat.color.set(cfg.ringColor ?? cfg.bodyColor);
+
     this._flameMat.color.set(cfg.flameColor);
     this._flame.scale.setScalar(cfg.flameSize);
-    this._flame.position.set(0, 0, cfg.bodyLength * 0.45);
+    this._flame.position.set(0, 0, 0.05);
 
     this._innerMat.color.set(cfg.innerColor);
     this._inner.scale.setScalar(cfg.innerSize);
-    this._inner.position.set(0, 0, cfg.bodyLength * 0.12);
+    this._inner.position.set(0, 0, 0.05);
 
     if (this._showStarSprite) {
       this._starMat.color.set(cfg.starColor);
       this._star.scale.setScalar(cfg.starSize);
-      this._star.position.set(0, 0, cfg.bodyLength * 0.20);
+      this._star.position.set(0, 0, 0.08);
     }
 
     this._light.color.set(cfg.lightColor);
@@ -307,7 +346,6 @@ export class BoosterEffect {
     const f3 = Math.sin(t *  1.9) * 0.5 + 0.5;
     const flicker = f1 * 0.20 + f2 * 0.48 + f3 * 0.32;
 
-    // Strength lerp
     const targetStrength = isAccelerating
       ? 0.72 + flicker * 0.28
       : 0.25 + flicker * 0.14;
@@ -317,59 +355,91 @@ export class BoosterEffect {
     this._currentStrength += (targetStrength - this._currentStrength) * alpha;
     const s = this._currentStrength;
 
-    // Lateral/roll response: read ship roll to bias flame left/right
+    // Decay letter burst (~0.18 s half-life)
+    this._letterBurst = Math.max(0, this._letterBurst - deltaTime * 4.5);
+    const lb = this._letterBurst; // 0..1
+
+    // Lateral response: roll + side velocity + yaw rate
     let lateral = 0;
     if (this._shipGroup) {
-      // prefer roll (z) as intuitive lateral cue; scale down so effect is subtle
-      lateral = THREE.MathUtils.clamp(-this._shipGroup.rotation.z * 6.0, -1, 1);
+      const rollLateral = THREE.MathUtils.clamp(-this._shipGroup.rotation.z * 5.2, -1, 1);
+      const shipPos = this._shipGroup.position;
+      if (!this._hasPrevShipPos) {
+        this._prevShipPos.copy(shipPos);
+        this._hasPrevShipPos = true;
+      }
+      const sideVel = THREE.MathUtils.clamp(
+        (shipPos.x - this._prevShipPos.x) / Math.max(deltaTime, 1e-4) * 0.45, -1, 1
+      );
+      this._prevShipPos.copy(shipPos);
+
+      const yawDeltaRaw = this._shipGroup.rotation.y - this._prevShipYaw;
+      const yawDelta = Math.atan2(Math.sin(yawDeltaRaw), Math.cos(yawDeltaRaw));
+      const yawLateral = THREE.MathUtils.clamp(
+        -yawDelta / Math.max(deltaTime, 1e-4) * 0.09, -1, 1
+      );
+      this._prevShipYaw = this._shipGroup.rotation.y;
+
+      const rawLateral = rollLateral * 0.45 + sideVel * 0.35 + yawLateral * 0.20;
+      this._dynamicLateral += (rawLateral - this._dynamicLateral) * Math.min(deltaTime * 10.0, 1);
+      lateral = THREE.MathUtils.clamp(this._dynamicLateral, -1, 1);
     }
 
-    // Slight root offset on thrust so flame looks stronger and more arrow-like
-    this._root.position.x = (this._cfg.localPosition.x ?? 0) + lateral * 0.12;
-    this._root.position.y = (this._cfg.localPosition.y ?? 0);
-    this._root.position.z = (this._cfg.localPosition.z ?? 0) - s * 0.18;
+    // Combined scale multiplier: letter burst + X-axis movement
+    const velBoost    = Math.abs(lateral) * 1.10;   // more boost when banking hard
+    const burstMult   = 1.0 + lb * 2.20 + velBoost * 0.60;
 
-    // Exhaust cone
-    const coneW = cfg.bodyRadius * (0.50 + s * 0.80);
-    const coneL = cfg.bodyLength * (0.55 + s * 0.75);
+    this._root.position.x = (cfg.localPosition.x ?? 0) + lateral * 0.20;
+    this._root.position.y = (cfg.localPosition.y ?? 0) - s * 0.025;
+    this._root.position.z = (cfg.localPosition.z ?? 0) - s * 0.18;
+
+    // Exhaust cone — grows with burst and lateral movement
+    const coneW = cfg.bodyRadius * (0.45 + s * 0.70) * burstMult;
+    const coneL = cfg.bodyLength * (0.65 + s * 1.0)  * (1.0 + lb * 1.60 + velBoost * 0.60);
     this._body.scale.set(coneW, coneW, coneL);
-    this._bodyMat.opacity = 0.08 + s * 0.36;
+    this._bodyMat.opacity = Math.min(0.95, (0.08 + s * 0.32) * (1.0 + lb * 0.80));
+    this._body.rotation.z = lateral * 0.55;
+    this._body.rotation.y = -lateral * 0.20;
 
-    // Tilt cone slightly with lateral input for dynamic look
-    this._body.rotation.z = lateral * 0.35;
+    // Nozzle ring — bursts wider on correct letter, faster spin when banking
+    const ringBreath  = 1.0 + Math.sin(t * 4.8) * 0.04 + s * 0.15;
+    const rr = (cfg.ringRadius ?? cfg.bodyRadius * 1.8) * ringBreath * (1.0 + lb * 1.40 + velBoost * 0.40);
+    this._ring.scale.setScalar(rr);
+    this._ringMat.opacity = Math.min(1.0, (0.55 + s * 0.40 + flicker * 0.10) * (1.0 + lb * 1.40));
+    this._ring.rotation.z += deltaTime * (0.8 + s * 1.5 + Math.abs(lateral) * 2.0);
 
-    // Outer flame sprite
-    const flameFactor = 0.60 + s * 0.58 + flicker * 0.14;
-    // elongate flame along forward axis to create arrow-like silhouette
-    this._flame.scale.set(cfg.flameSize * (1.0 + s * 0.32), cfg.flameSize * (0.7 + s * 0.24), 1);
-    this._flameMat.opacity = 0.18 + s * 0.65;
+    // Outer halo — circular glow, expands on burst
+    const haloScale = cfg.flameSize * (0.65 + s * 0.55 + flicker * 0.12) * burstMult;
+    this._flame.scale.setScalar(haloScale);
+    this._flameMat.opacity = Math.min(0.95, (0.22 + s * 0.55 + flicker * 0.08) * (1.0 + lb * 2.00));
 
-    // Inner core sprite
+    // Inner core — tight, high-frequency flicker, intense on burst
     const coreF = Math.sin(t * 19.3) * 0.5 + 0.5;
-    const coreFactor = 0.68 + s * 0.42 + coreF * 0.10;
-    this._inner.scale.setScalar(cfg.innerSize * coreFactor * (0.9 + Math.abs(lateral) * 0.06));
-    this._innerMat.opacity = 0.55 + s * 0.40 + coreF * 0.05;
+    const coreFactor = 0.55 + s * 0.40 + coreF * 0.08;
+    this._inner.scale.setScalar(cfg.innerSize * coreFactor * (0.90 + Math.abs(lateral) * 0.12) * (1.0 + lb * 2.20));
+    this._innerMat.opacity = Math.min(1.0, (0.70 + s * 0.36 + coreF * 0.05) * (1.0 + lb * 1.60));
 
-    // Star burst sprite — slow rotation + pulse on thrust (skipped on LOW quality)
+    // Star burst — spikes on letter hit
     if (this._showStarSprite) {
-      const starPulse = 0.55 + s * 0.65 + flicker * 0.12;
+      const starPulse = (0.30 + s * 0.42 + flicker * 0.08) * (1.0 + lb * 3.00);
       this._star.scale.setScalar(cfg.starSize * starPulse);
       this._starMat.opacity = isAccelerating
-        ? 0.50 + s * 0.45 + flicker * 0.08
-        : 0.15 + s * 0.20 + flicker * 0.05;
+        ? Math.min(1.0, (0.28 + s * 0.32 + flicker * 0.06) * (1.0 + lb * 2.80))
+        : Math.min(1.0, (0.08 + s * 0.14 + flicker * 0.04) * (1.0 + lb * 2.80));
       this._starMat.rotation += deltaTime * 0.35;
     }
 
-    // Point light — intensity scaled by quality tier
-    this._light.intensity = cfg.lightIntens * this._lightMult * (0.30 + s * 0.90 + flicker * 0.18);
-    // nudge light position slightly with lateral motion
-    this._light.position.x = (cfg.lightOffset?.x ?? 0) + lateral * 0.18;
+    // Point light — spikes on letter hit
+    this._light.intensity = cfg.lightIntens * this._lightMult
+      * (0.30 + s * 0.90 + flicker * 0.18)
+      * (1.0 + lb * 3.00);
+    this._light.position.x = (cfg.lightOffset?.x ?? 0) + lateral * 0.25;
   }
 
   dispose() {
     if (this._root.parent) this._root.parent.remove(this._root);
-    // Cone geometry is shared across instances — do NOT dispose it here.
     this._bodyMat.dispose();
+    this._ringMat.dispose();
     this._flameMat.dispose();
     this._innerMat.dispose();
     this._starMat.dispose();
