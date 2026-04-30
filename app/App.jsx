@@ -10,8 +10,8 @@ import { Bridge } from "../shared/bridge.js";
 
 export default function App() {
   const [state, setState] = useState(Bridge.getState());
-  const [showEpilepsyWarning, setShowEpilepsyWarning] = useState(true);
-  const [showVantaStudios, setShowVantaStudios] = useState(false);
+  const [showVantaStudios, setShowVantaStudios] = useState(true);
+  const [showEpilepsyWarning, setShowEpilepsyWarning] = useState(false);
   
   useEffect(() => {
     const mountEl = document.getElementById("game-canvas");
@@ -26,23 +26,23 @@ export default function App() {
     gameMode, raceVictory, peakWPM, timeElapsed,
   } = state;
 
-  if (showEpilepsyWarning) {
+  if (showVantaStudios) {
     return (
-      <EpilepsyWarning 
-        onAccept={() => {
-          setShowEpilepsyWarning(false);
-          setShowVantaStudios(true);
+      <VantaStudios 
+        onComplete={() => {
+          setShowVantaStudios(false);
+          setShowEpilepsyWarning(true);
         }} 
-        autoSkipAfter={10}
+        duration={4500}
       />
     );
   }
 
-  if (showVantaStudios) {
+  if (showEpilepsyWarning) {
     return (
-      <VantaStudios 
-        onComplete={() => setShowVantaStudios(false)} 
-        duration={4500}
+      <EpilepsyWarning 
+        onAccept={() => setShowEpilepsyWarning(false)} 
+        autoSkipAfter={10}
       />
     );
   }
