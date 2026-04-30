@@ -5,11 +5,13 @@ import HUD from "./components/HUD.jsx";
 import MatchResult from "./components/MatchResult.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
 import EpilepsyWarning from "./components/EpilepsyWarning.jsx";
+import VantaStudios from "./components/VantaStudios.jsx";
 import { Bridge } from "../shared/bridge.js";
 
 export default function App() {
   const [state, setState] = useState(Bridge.getState());
   const [showEpilepsyWarning, setShowEpilepsyWarning] = useState(true);
+  const [showVantaStudios, setShowVantaStudios] = useState(false);
   
   useEffect(() => {
     const mountEl = document.getElementById("game-canvas");
@@ -27,8 +29,20 @@ export default function App() {
   if (showEpilepsyWarning) {
     return (
       <EpilepsyWarning 
-        onAccept={() => setShowEpilepsyWarning(false)} 
+        onAccept={() => {
+          setShowEpilepsyWarning(false);
+          setShowVantaStudios(true);
+        }} 
         autoSkipAfter={10}
+      />
+    );
+  }
+
+  if (showVantaStudios) {
+    return (
+      <VantaStudios 
+        onComplete={() => setShowVantaStudios(false)} 
+        duration={4500}
       />
     );
   }
