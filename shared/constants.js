@@ -98,10 +98,10 @@ export const FLOW_COOLDOWN_MS      = 3000;
 export const FLOW_BEAM_CHAIN       = 3;    // enemies hit per letter in flow mode
 
 export const COLORS_FLOW = {
-  RAMP: ['#ffffff', '#cc99ff', '#9966ff', '#7744ff', '#5533cc'],
-  FRAME:     '#9966ff',
-  BEAM:      '#7744ff',
-  BEAM_GLOW: '#aa77ff',
+  RAMP: ['#ffffff', '#eabfff', '#c400ff', '#aa00ff', '#8800ff'],
+  FRAME:     '#cc00ff',
+  BEAM:      '#aa00ff',
+  BEAM_GLOW: '#d500ff',
 };
 
 // Frases narrativas del universo BABEL — cada una es un array de palabras

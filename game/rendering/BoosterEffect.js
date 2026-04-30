@@ -13,9 +13,9 @@ let _starTex  = null;
 const _boostDark  = new THREE.Color(0x102a7a);
 const _boostMid   = new THREE.Color(0x4d7eff);
 const _boostLight = new THREE.Color(0xb8f2ff);
-const _flowDark   = new THREE.Color(0x2b0b6d);
-const _flowMid    = new THREE.Color(0x7744ff);
-const _flowLight  = new THREE.Color(0xe0c8ff);
+const _flowDark   = new THREE.Color(0xb400ff); // Extremadamente morado e intenso
+const _flowMid    = new THREE.Color(0xdb00ff); // Destello magenta ultra fuerte
+const _flowLight  = new THREE.Color(0xea00ff); // Núcleo magenta vivo sin lavarlo con blanco
 const _tmpColorA  = new THREE.Color();
 const _tmpColorB  = new THREE.Color();
 const _tmpColorC  = new THREE.Color();
@@ -217,7 +217,7 @@ export class BoosterEffect {
     this._bodyMat = new THREE.MeshBasicMaterial({
       color:       0xffffff,
       transparent: true,
-      opacity:     0.35,
+      opacity:     0.65, // Aumentado para mayor presencia de color
       blending:    THREE.AdditiveBlending,
       depthWrite:  false,
       side:        THREE.DoubleSide,
@@ -247,7 +247,7 @@ export class BoosterEffect {
       map:         _getFlame(),
       color:       0xffffff,
       transparent: true,
-      opacity:     0.70,
+      opacity:     0.95, // Aumentado para que el resplandor sea menos opaco/más sólido
       blending:    THREE.AdditiveBlending,
       depthWrite:  false,
     });
