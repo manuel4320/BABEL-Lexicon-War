@@ -56,7 +56,7 @@ function ScrambleText({ text, isScrambling, delay = 0, duration = 1500 }) {
   );
 }
 
-export default function VantaStudios({ onComplete, duration = 5500 }) {
+export default function VantaStudios({ onComplete, duration = 6500 }) {
   const [phase, setPhase] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const onCompleteRef = React.useRef(onComplete);
@@ -69,13 +69,13 @@ export default function VantaStudios({ onComplete, duration = 5500 }) {
     // Phase 1: Start scramble animation (after initial fade in)
     const phase1Timer = setTimeout(() => setPhase(1), 400);
     
-    // Phase 2: Show tagline (after title scramble completes ~2000ms)
+    // Phase 2: Show tagline (after title scramble completes ~2200ms)
     const phase2Timer = setTimeout(() => setPhase(2), 2600);
     
-    // Phase 3: Fade out
+    // Phase 3: Fade out (give tagline ~2500ms to complete + display)
     const phase3Timer = setTimeout(() => {
       setIsVisible(false);
-    }, duration - 800);
+    }, duration - 1000);
 
     // Complete
     const completeTimer = setTimeout(() => {
@@ -176,19 +176,21 @@ export default function VantaStudios({ onComplete, duration = 5500 }) {
             </div>
 
             {/* Tagline */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 10 }}
-              transition={{ duration: 0.6 }}
-              style={styles.tagline}
-            >
-              <ScrambleText
-                text="FROM DARKNESS, WE CREATE"
-                isScrambling={phase >= 2}
-                delay={0}
-                duration={800}
-              />
-            </motion.div>
+            {phase >= 2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                style={styles.tagline}
+              >
+                <ScrambleText
+                  text="FROM DARKNESS, WE CREATE"
+                  isScrambling={true}
+                  delay={0}
+                  duration={1000}
+                />
+              </motion.div>
+            )}
 
             {/* Decorative lines */}
             <motion.div
