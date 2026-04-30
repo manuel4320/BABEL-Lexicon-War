@@ -10,6 +10,15 @@ let _flameTex = null;
 let _innerTex = null;
 let _starTex  = null;
 
+const _boostDark  = new THREE.Color(0x102a7a);
+const _boostMid   = new THREE.Color(0x4d7eff);
+const _boostLight = new THREE.Color(0xb8f2ff);
+const _tmpColorA  = new THREE.Color();
+const _tmpColorB  = new THREE.Color();
+const _tmpColorC  = new THREE.Color();
+const _tmpColorD  = new THREE.Color();
+const _tmpColorE  = new THREE.Color();
+
 function _buildFlameTexture() {
   const size   = 256;
   const canvas = document.createElement('canvas');
@@ -128,15 +137,15 @@ export const SHIP_BOOSTER_CONFIGS = {
     flameSize:     0.95,
     innerSize:     0.42,
     starSize:      1.10,
-    lightColor:    0x68d8ff,
+    lightColor:    0x86e8ff,
     lightIntens:   9.0,
     lightDist:     16.0,
     lightOffset:   new THREE.Vector3(0, 0, 0.35),
-    bodyColor:     0x2f4cff,
-    flameColor:    0x86dcff,
-    innerColor:    0xc9f5ff,
-    starColor:     0x2240bf,
-    ringColor:     0x5f7dff,
+    bodyColor:     0x2340b8,
+    flameColor:    0x7fdcff,
+    innerColor:    0xbef2ff,
+    starColor:     0x16368f,
+    ringColor:     0x5d84ff,
   },
 
   // spaceship.glb  |  targetLength 5.0
@@ -148,15 +157,15 @@ export const SHIP_BOOSTER_CONFIGS = {
     flameSize:     1.85,
     innerSize:     0.75,
     starSize:      2.90,
-    lightColor:    0x68d8ff,
+    lightColor:    0x86e8ff,
     lightIntens:   6.5,
     lightDist:     12.0,
     lightOffset:   new THREE.Vector3(0, 0, 0.45),
-    bodyColor:     0x2747cc,
-    flameColor:    0x8fdfff,
-    innerColor:    0xd8fbff,
-    starColor:     0x1e3caa,
-    ringColor:     0x5d86ff,
+    bodyColor:     0x1f3d9f,
+    flameColor:    0x8adfff,
+    innerColor:    0xc7f7ff,
+    starColor:     0x17368f,
+    ringColor:     0x6b8cff,
   },
 
   // spaceship__low_poly.glb  |  targetLength 3.2
@@ -360,6 +369,21 @@ export class BoosterEffect {
     // Decay letter burst (~0.18 s half-life)
     this._letterBurst = Math.max(0, this._letterBurst - deltaTime * 4.5);
     const lb = this._letterBurst; // 0..1
+    const blueMix = THREE.MathUtils.clamp(0.20 + s * 0.45 + flicker * 0.12 + lb * 0.18, 0, 1);
+    const glowMix = THREE.MathUtils.clamp(0.35 + s * 0.50 + lb * 0.22, 0, 1);
+
+    _tmpColorA.lerpColors(_boostDark, _boostMid, blueMix);
+    _tmpColorB.lerpColors(_boostMid, _boostLight, glowMix);
+    _tmpColorC.lerpColors(_boostDark, _boostLight, THREE.MathUtils.clamp(0.45 + s * 0.30 + flicker * 0.10, 0, 1));
+    _tmpColorD.lerpColors(_boostDark, _boostMid, THREE.MathUtils.clamp(0.30 + s * 0.42, 0, 1));
+    _tmpColorE.lerpColors(_boostMid, _boostLight, THREE.MathUtils.clamp(0.50 + s * 0.30 + lb * 0.10, 0, 1));
+
+    this._bodyMat.color.copy(_tmpColorA);
+    this._ringMat.color.copy(_tmpColorD);
+    this._flameMat.color.copy(_tmpColorB);
+    this._innerMat.color.copy(_tmpColorC);
+    if (this._showStarSprite) this._starMat.color.copy(_tmpColorE);
+    this._light.color.copy(_tmpColorB);
 
     // Lateral response: roll + side velocity + yaw rate
     let lateral = 0;
