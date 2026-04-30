@@ -33,7 +33,7 @@ export default function App() {
           setShowVantaStudios(false);
           setShowEpilepsyWarning(true);
         }} 
-        duration={4500}
+        duration={5500}
       />
     );
   }

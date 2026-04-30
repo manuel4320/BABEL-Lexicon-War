@@ -56,7 +56,7 @@ function ScrambleText({ text, isScrambling, delay = 0, duration = 1500 }) {
   );
 }
 
-export default function VantaStudios({ onComplete, duration = 4000 }) {
+export default function VantaStudios({ onComplete, duration = 5500 }) {
   const [phase, setPhase] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const onCompleteRef = React.useRef(onComplete);
@@ -66,16 +66,16 @@ export default function VantaStudios({ onComplete, duration = 4000 }) {
   }, [onComplete]);
 
   useEffect(() => {
-    // Phase 1: Start scramble animation
-    const phase1Timer = setTimeout(() => setPhase(1), 300);
+    // Phase 1: Start scramble animation (after initial fade in)
+    const phase1Timer = setTimeout(() => setPhase(1), 400);
     
-    // Phase 2: Show tagline
-    const phase2Timer = setTimeout(() => setPhase(2), 1800);
+    // Phase 2: Show tagline (after title scramble completes ~2000ms)
+    const phase2Timer = setTimeout(() => setPhase(2), 2600);
     
     // Phase 3: Fade out
     const phase3Timer = setTimeout(() => {
       setIsVisible(false);
-    }, duration - 600);
+    }, duration - 800);
 
     // Complete
     const completeTimer = setTimeout(() => {
@@ -170,7 +170,7 @@ export default function VantaStudios({ onComplete, duration = 4000 }) {
                 <ScrambleText
                   text="VANTA STUDIOS"
                   isScrambling={phase >= 1}
-                  duration={1200}
+                  duration={1800}
                 />
               )}
             </div>
