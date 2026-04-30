@@ -10,15 +10,14 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '2rem',
+    gap: '1.5rem',
     background: 'rgba(0,0,8,0.85)',
   },
-  title: {
-    fontFamily: "'Orbitron', sans-serif",
-    fontSize: '3rem',
-    color: '#00ffcc',
-    letterSpacing: '0.3em',
-    textTransform: 'uppercase',
+  titleImage: {
+    maxWidth: '90%',
+    width: '600px',
+    height: 'auto',
+    marginBottom: '0.5rem',
   },
   subtitle: {
     fontFamily: "'Orbitron', sans-serif",
@@ -44,8 +43,11 @@ export default function MainMenu() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>BABEL:</h1>
-      <p style={styles.subtitle}>Lexicon War</p>
+      <img 
+        src="/images/babel-title.png" 
+        alt="BABEL: The Lexicon War" 
+        style={styles.titleImage}
+      />
       <p style={{ ...styles.subtitle, color: '#555', fontStyle: 'italic' }}>
         "Error de sintaxis. Coincidencia fallida."
       </p>

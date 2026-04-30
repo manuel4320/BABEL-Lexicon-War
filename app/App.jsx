@@ -4,10 +4,13 @@ import MainMenu from "./components/MainMenu.jsx";
 import HUD from "./components/HUD.jsx";
 import MatchResult from "./components/MatchResult.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
+import EpilepsyWarning from "./components/EpilepsyWarning.jsx";
 import { Bridge } from "../shared/bridge.js";
 
 export default function App() {
   const [state, setState] = useState(Bridge.getState());
+  const [showEpilepsyWarning, setShowEpilepsyWarning] = useState(true);
+  
   useEffect(() => {
     const mountEl = document.getElementById("game-canvas");
     initGame(mountEl);
@@ -20,6 +23,15 @@ export default function App() {
     isRunning, gameOver, score, wpm, accuracy, wave,
     gameMode, raceVictory, peakWPM, timeElapsed,
   } = state;
+
+  if (showEpilepsyWarning) {
+    return (
+      <EpilepsyWarning 
+        onAccept={() => setShowEpilepsyWarning(false)} 
+        autoSkipAfter={10}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
