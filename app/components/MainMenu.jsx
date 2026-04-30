@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bridge } from '../../shared/bridge.js';
 import { GAME_MODES } from '../../shared/constants.js';
+import TitleAnimation from './TitleAnimation.jsx';
 
 const styles = {
   container: {
@@ -39,7 +40,12 @@ const styles = {
 };
 
 export default function MainMenu() {
+  const [showTitleAnimation, setShowTitleAnimation] = useState(true);
   const start = (mode) => Bridge.commands.startGame(mode);
+
+  if (showTitleAnimation) {
+    return <TitleAnimation onComplete={() => setShowTitleAnimation(false)} />;
+  }
 
   return (
     <div style={styles.container}>
