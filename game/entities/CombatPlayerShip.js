@@ -1,6 +1,7 @@
 ﻿import * as THREE from 'three';
 import { ShipBase } from './ShipBase.js';
-import { COLORS } from '../../shared/constants.js';
+import { COLORS, COLORS_FLOW } from '../../shared/constants.js';
+import { Bridge } from '../../shared/bridge.js';
 import { BoosterEffect, SHIP_BOOSTER_CONFIGS } from '../rendering/BoosterEffect.js';
 
 const COMBAT_MODEL_URL = '/models/spaceshipnew.glb';
@@ -34,6 +35,8 @@ export class CombatPlayerShip extends ShipBase {
 
     this._group.position.copy(this._basePosition);
     this._collapsing = false;
+    this._thermalColorCache = new THREE.Color();
+    CombatPlayerShip._rampColors = null;
     this._collapseT = 0;
     this._collapseOnDone = null;
     this._collapseDone = false;
@@ -255,12 +258,30 @@ export class CombatPlayerShip extends ShipBase {
     if (this._lightFill) this._lightFill.intensity = 3.0 + Math.sin(this._t * 2.4) * 0.14 + this._recoil * 0.3;
     if (this._lightBack) this._lightBack.intensity = 3.4 + Math.sin(this._t * 2.2) * 0.16 + this._recoil * 0.4;
 
+    const { flow: _flow, flowActive: _flowActive } = Bridge.peekState();
+    this._booster.setThermalColor(this._getThermalColor(_flow, _flowActive));
     this._booster.update(delta, this._isThrusting);
     if (this._isThrusting) this._isThrusting = false;   // auto-clear; caller sets it each frame
   }
 
+  get thermalColor() {
+    const { flow, flowActive } = Bridge.peekState();
+    return this._getThermalColor(flow, flowActive);
+  }
+
   /** Call each frame while the engines are firing (e.g. when targeting, boosting, or recoiling). */
   setThrusting(on) { this._isThrusting = on; }
+
+  _getThermalColor(flow, flowActive) {
+    if (!CombatPlayerShip._rampColors)
+      CombatPlayerShip._rampColors = COLORS_FLOW.RAMP.map(c => new THREE.Color(c));
+    if (flowActive) return COLORS_FLOW.RAMP[4];
+    const ramp = CombatPlayerShip._rampColors;
+    const norm = Math.max(0, Math.min(1, flow / 100));
+    const seg  = Math.min(3, Math.floor(norm * 4));
+    const t    = norm * 4 - seg;
+    return '#' + this._thermalColorCache.copy(ramp[seg]).lerp(ramp[seg + 1], t).getHexString();
+  }
 
   /** Booster burst on correct letter typed. */
   onLetterCorrect(intensity = 1.0) {

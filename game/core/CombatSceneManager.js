@@ -2,6 +2,7 @@
 import { CombatEnemy, TYPE_META, ENEMY_TYPES } from '../entities/CombatEnemy.js';
 import { CombatPlayerShip } from '../entities/CombatPlayerShip.js';
 import { Projectile, PROJECTILE_TYPES } from '../entities/Projectile.js';
+import { LexBeam } from '../entities/LexBeam.js';
 import { WordToken } from '../entities/WordToken.js';
 import { ParticleEmitter } from '../rendering/ParticleEmitter.js';
 import { Arena, ARENA_SCENARIO_2 } from '../entities/Arena.js';
@@ -288,9 +289,12 @@ export class CombatSceneManager {
 
   _fireAt(enemy) {
     if (!this._player || !enemy?.active) return;
-    const proj = new Projectile(this._player.muzzlePosition, enemy, () => enemy.hitFlash?.(), pickProjectileType());
-    proj.addToScene(this.scene);
-    this.projectiles.push(proj);
+    const onHit = () => enemy.hitFlash?.();
+    const shot = Bridge.peekState().flowActive
+      ? new LexBeam(this._player.muzzlePosition, enemy, onHit)
+      : new Projectile(this._player.muzzlePosition, enemy, onHit, pickProjectileType(), this._player.thermalColor);
+    shot.addToScene(this.scene);
+    this.projectiles.push(shot);
     this._player.fireAnim();
   }
 
