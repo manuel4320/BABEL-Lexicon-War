@@ -200,6 +200,111 @@ html, body {
   animation: edge-flash-red 0.35s ease forwards;
 }
 
+@keyframes frame-flow-pulse {
+  0%, 100% { opacity: 0.70; }
+  50%       { opacity: 0.35; }
+}
+
+@keyframes flow-bar-active-pulse {
+  0%, 100% { opacity: 0.12; }
+  50%       { opacity: 0.30; }
+}
+
+.flow-bar-active-pulse {
+  animation: flow-bar-active-pulse 1.2s ease-in-out infinite;
+}
+
+/* ── FlowFrame — like LowHpFrame but green ─────────────────────────── */
+.flow-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  pointer-events: none;
+  color: rgba(0, 255, 136, 0.9);
+}
+
+.flow-frame::before {
+  content: "";
+  position: absolute;
+  inset: 1rem;
+  border: 1px solid rgba(0, 255, 136, 0.55);
+  border-radius: 0.4rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 255, 136, 0.18),
+    inset 0 0 40px rgba(0, 255, 136, 0.08),
+    0 0 28px rgba(0, 255, 136, 0.14);
+  animation: frame-flow-pulse 1.0s ease-in-out infinite;
+}
+
+.flow-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,255,136,0.10), transparent 16%, transparent 84%, rgba(0,255,136,0.10)),
+    linear-gradient(180deg, rgba(0,255,136,0.06), transparent 12%, transparent 88%, rgba(0,255,136,0.06));
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  animation: frame-flow-pulse 1.0s ease-in-out infinite;
+}
+
+.flow-frame-corner,
+.flow-frame-scan,
+.flow-frame-caption {
+  position: absolute;
+}
+
+.flow-frame-corner {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-color: currentColor;
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.95;
+}
+
+.flow-frame-corner-tl { top: 1rem; left: 1rem; border-top-width: 2px; border-left-width: 2px; }
+.flow-frame-corner-tr { top: 1rem; right: 1rem; border-top-width: 2px; border-right-width: 2px; }
+.flow-frame-corner-bl { bottom: 1rem; left: 1rem; border-bottom-width: 2px; border-left-width: 2px; }
+.flow-frame-corner-br { bottom: 1rem; right: 1rem; border-bottom-width: 2px; border-right-width: 2px; }
+
+.flow-frame-scan {
+  left: 1rem; right: 1rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.28;
+}
+
+.flow-frame-scan-top    { top: 1rem; }
+.flow-frame-scan-bottom { bottom: 1rem; }
+
+.flow-frame-caption {
+  bottom: 1.55rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+/* ── InfoBox — positive notification ──────────────────────────────── */
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.48rem 0.85rem;
+  border: 1px solid rgba(0, 255, 136, 0.33);
+  background: rgba(0, 0, 0, 0.52);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  animation: frame-flow-pulse 1.4s ease-in-out infinite;
+}
+
 .low-hp-frame {
   position: fixed;
   inset: 0;

@@ -436,6 +436,15 @@ export class BoosterEffect {
     this._light.position.x = (cfg.lightOffset?.x ?? 0) + lateral * 0.25;
   }
 
+  setThermalColor(hexColor) {
+    this._bodyMat.color.set(hexColor);
+    this._ringMat.color.set(hexColor);
+    this._flameMat.color.set(hexColor);
+    this._innerMat.color.set(hexColor);
+    if (this._showStarSprite) this._starMat.color.set(hexColor);
+    this._light.color.set(hexColor);
+  }
+
   dispose() {
     if (this._root.parent) this._root.parent.remove(this._root);
     this._bodyMat.dispose();
