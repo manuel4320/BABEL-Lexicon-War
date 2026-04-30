@@ -47,6 +47,12 @@ export const EventTypes = {
   RACE_FAILED:           'race:failed',
   RACE_PHRASE_COMPLETED: 'race:phrase_completed',
 
+  // --- Flow ---
+  FLOW_PROGRESS:   'flow:progress',    // { value, active }
+  FLOW_ENTER:      'flow:enter',       // { wpm }
+  FLOW_EXIT:       'flow:exit',        // { duration, wordsTyped }
+  FLOW_HEAL:       'flow:heal',        // { amount, hp }
+
   // --- Sistema ---
   SCENE_READY:        'scene:ready',
   ASSETS_LOADED:      'assets:loaded',

@@ -84,6 +84,26 @@ export const RACE_COUNTDOWN_SECS  = 5;
 // [minStreak, multiplier]
 export const FLOW_STEPS = [[0,1.0],[5,1.2],[10,1.4],[15,1.6],[20,2.0]];
 
+// --- FLUJO·LEX ---
+export const FLOW_MAX              = 100;
+export const FLOW_GAIN_PER_LETTER  = 1.1;
+export const FLOW_DECAY_IDLE       = 4;
+export const FLOW_DECAY_ACTIVE     = 5;
+export const FLOW_PENALTY_HIT      = 25;
+export const FLOW_PENALTY_MISS     = 6;
+export const FLOW_PENALTY_FAIL     = 15;
+export const FLOW_HEAL_RATE        = 8;
+export const FLOW_BEAM_DAMAGE_MULT = 2.5;
+export const FLOW_COOLDOWN_MS      = 3000;
+export const FLOW_BEAM_CHAIN       = 3;    // enemies hit per letter in flow mode
+
+export const COLORS_FLOW = {
+  RAMP: ['#4466ff', '#00ddff', '#ffcc44', '#ff7722', '#ff2244'],
+  FRAME:     '#00ff88',
+  BEAM:      '#ff2244',
+  BEAM_GLOW: '#ff6688',
+};
+
 // Frases narrativas del universo BABEL — cada una es un array de palabras
 export const PHRASE_POOL_ES = [
   ['las', 'palabras', 'no', 'se', 'acaban'],

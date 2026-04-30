@@ -50,6 +50,9 @@ let _state = {
   playerPhrasesCompleted: 0,
   combatEnemies:    [],
   swarmRemnants:    0,
+  flow:             0,
+  flowActive:       false,
+  flowCooldown:     false,
   warnings: {
     proximityLevel:      'none',
     lowHpLevel:          'none',
