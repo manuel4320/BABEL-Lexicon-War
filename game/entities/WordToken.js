@@ -2,8 +2,6 @@
 // La posición 3D del enemigo se convierte a coordenadas de pantalla cada frame.
 // El DOM lo maneja HUDCanvas.js — WordToken solo expone los datos.
 
-import * as THREE from 'three';
-
 export class WordToken {
   constructor(enemy) {
     this.enemy   = enemy;
@@ -18,16 +16,14 @@ export class WordToken {
 
   // Coordenadas de pantalla — calculadas por HUDCanvas con cámara
   screenPos(camera, width, height) {
-    WordToken._tempPos.copy(this.enemy.position);
-    WordToken._tempPos.y += 1.2; // offset sobre el enemigo
+    const pos = this.enemy.position.clone();
+    pos.y += 1.2; // offset sobre el enemigo
 
-    WordToken._tempPos.project(camera);
+    pos.project(camera);
 
     return {
-      x: (WordToken._tempPos.x * 0.5 + 0.5) * width,
-      y: (-WordToken._tempPos.y * 0.5 + 0.5) * height,
+      x: (pos.x * 0.5 + 0.5) * width,
+      y: (-pos.y * 0.5 + 0.5) * height,
     };
   }
 }
-
-WordToken._tempPos = new THREE.Vector3();

@@ -89,32 +89,24 @@ export class HUDCanvas {
     const enemyPos = token?.enemy?.position;
     if (!enemyPos) return false;
 
-    HUDCanvas._tempNdc1.copy(enemyPos).project(this.camera);
-    if (HUDCanvas._tempNdc1.z < -1 || HUDCanvas._tempNdc1.z > 1) return false;
+    const enemyNdc = enemyPos.clone().project(this.camera);
+    if (enemyNdc.z < -1 || enemyNdc.z > 1) return false;
+    const enemyX = (enemyNdc.x * 0.5 + 0.5) * width;
+    const enemyY = (-enemyNdc.y * 0.5 + 0.5) * height;
 
     for (const entry of this.occluders) {
       const obj = entry?.object;
       if (!obj) continue;
-      
-      let occWorld = HUDCanvas._tempNdc2;
-      if (obj.getWorldPosition) {
-        obj.getWorldPosition(occWorld);
-      } else if (obj.position) {
-        occWorld.copy(obj.position);
-      } else {
-        continue;
-      }
-      
-      occWorld.project(this.camera);
-      if (occWorld.z < -1 || occWorld.z > 1) continue;
+      const occWorld = obj.getWorldPosition ? obj.getWorldPosition(new THREE.Vector3()) : obj.position?.clone?.();
+      if (!occWorld) continue;
+      const occNdc = occWorld.project(this.camera);
+      if (occNdc.z < -1 || occNdc.z > 1) continue;
 
       // Occluder must be closer to camera than enemy label target.
-      if (occWorld.z >= HUDCanvas._tempNdc1.z) continue;
+      if (occNdc.z >= enemyNdc.z) continue;
 
-      const occX = (occWorld.x * 0.5 + 0.5) * width;
-      const occY = (-occWorld.y * 0.5 + 0.5) * height;
-      const enemyX = (HUDCanvas._tempNdc1.x * 0.5 + 0.5) * width;
-      const enemyY = (-HUDCanvas._tempNdc1.y * 0.5 + 0.5) * height;
+      const occX = (occNdc.x * 0.5 + 0.5) * width;
+      const occY = (-occNdc.y * 0.5 + 0.5) * height;
       const radiusPx = entry.radiusPx ?? 170;
       const dx = enemyX - occX;
       const dy = enemyY - occY;
@@ -124,6 +116,3 @@ export class HUDCanvas {
     return false;
   }
 }
-
-HUDCanvas._tempNdc1 = new THREE.Vector3();
-HUDCanvas._tempNdc2 = new THREE.Vector3();

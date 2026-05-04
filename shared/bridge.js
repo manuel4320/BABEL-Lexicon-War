@@ -50,9 +50,6 @@ let _state = {
   playerPhrasesCompleted: 0,
   combatEnemies:    [],
   swarmRemnants:    0,
-  flow:             0,
-  flowActive:       false,
-  flowCooldown:     false,
   warnings: {
     proximityLevel:      'none',
     lowHpLevel:          'none',
@@ -71,17 +68,12 @@ function notifyStateChange() {
 
 export const Bridge = {
   setState(partial) {
-    Object.assign(_state, partial);
+    _state = { ..._state, ...partial };
     notifyStateChange();
   },
 
   getState() {
     return { ..._state };
-  },
-
-  // Zero-copy read — returns internal reference. Game-loop use only; never store across frames.
-  peekState() {
-    return _state;
   },
 
   onStateChange(fn) {
