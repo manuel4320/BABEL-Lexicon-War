@@ -3,30 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Small metallic spark particle
 function Spark({ x, y, angle, delay, color }) {
-  const distance = 60 + Math.random() * 120;
-  const gravity = 80 + Math.random() * 60;
+  const distance = 80 + Math.random() * 150;
+  const gravity = 60 + Math.random() * 80;
   const endX = x + Math.cos(angle) * distance;
   const endY = y + Math.sin(angle) * distance + gravity;
-  const size = 2 + Math.random() * 3;
-  const duration = 0.4 + Math.random() * 0.5;
+  const size = 4 + Math.random() * 5;
+  const duration = 0.6 + Math.random() * 0.6;
 
   return (
     <motion.div
-      initial={{ x, y, opacity: 1, scale: 1 }}
+      initial={{ x, y, opacity: 1, scale: 1.2 }}
       animate={{ 
         x: endX, 
         y: endY, 
-        opacity: 0, 
-        scale: 0 
+        opacity: [1, 1, 0], 
+        scale: [1.2, 0.8, 0]
       }}
-      transition={{ duration, delay, ease: "easeOut" }}
+      transition={{ duration, delay, ease: "easeOut", times: [0, 0.5, 1] }}
       style={{
         position: 'absolute',
         width: size,
         height: size,
         borderRadius: '50%',
         background: color,
-        boxShadow: `0 0 ${size * 2}px ${color}`,
+        boxShadow: `0 0 ${size * 3}px ${color}, 0 0 ${size * 6}px ${color}`,
         pointerEvents: 'none',
       }}
     />
@@ -44,15 +44,15 @@ function SparkBurst({ active, centerX, centerY }) {
       const colors = ['#ffffff', '#ffffcc', '#ffcc44', '#ff9900', '#ff6600'];
       
       // Create many small particles
-      const sparkCount = 50;
+      const sparkCount = 80;
       for (let i = 0; i < sparkCount; i++) {
-        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.8;
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 1.2;
         newSparks.push({
           id: i,
-          x: centerX + (Math.random() - 0.5) * 30,
-          y: centerY + (Math.random() - 0.5) * 20,
+          x: centerX + (Math.random() - 0.5) * 50,
+          y: centerY + (Math.random() - 0.5) * 30,
           angle,
-          delay: Math.random() * 0.1,
+          delay: Math.random() * 0.15,
           color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
