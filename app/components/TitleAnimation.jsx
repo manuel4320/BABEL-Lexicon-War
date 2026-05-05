@@ -35,7 +35,7 @@ function Spark({ x, y, angle, delay, color, horizontalSpeed, initialUpward, fall
   );
 }
 
-// Generate sparks that spread and fall
+// Generate sparks that spread across the title width and fall
 function SparkBurst({ active }) {
   const [sparks, setSparks] = useState([]);
 
@@ -45,24 +45,30 @@ function SparkBurst({ active }) {
       // Metallic spark colors - hot metal
       const colors = ['#ffffff', '#ffffcc', '#ffdd44', '#ffaa00', '#ff7700', '#ff5500'];
       
+      // Title width approximately 450px, so spread sparks across that range
+      const titleWidth = 450;
+      
       // Create many particles that spread outward and fall
-      const sparkCount = 150;
+      const sparkCount = 180;
       for (let i = 0; i < sparkCount; i++) {
-        // Spread horizontally from collision point
-        const angle = (Math.random() - 0.5) * Math.PI * 1.2 + (Math.random() > 0.5 ? 0 : Math.PI);
+        // Spawn sparks across the entire title width
+        const spawnX = (Math.random() - 0.5) * titleWidth;
+        // Angle mostly downward with horizontal spread
+        const angle = (Math.random() - 0.5) * Math.PI * 0.6;
+        
         newSparks.push({
           id: i,
-          x: (Math.random() - 0.5) * 60,
-          y: (Math.random() - 0.5) * 30,
+          x: spawnX,
+          y: (Math.random() - 0.5) * 20,
           angle,
-          delay: Math.random() * 0.15,
+          delay: Math.random() * 0.2,
           color: colors[Math.floor(Math.random() * colors.length)],
           // Pre-calculate random values
-          horizontalSpeed: 100 + Math.random() * 200,
-          initialUpward: -(30 + Math.random() * 80),
-          fallDistance: 500 + Math.random() * 400,
-          size: 3 + Math.random() * 5,
-          duration: 1.5 + Math.random() * 1.0,
+          horizontalSpeed: 50 + Math.random() * 150,
+          initialUpward: -(20 + Math.random() * 60),
+          fallDistance: 500 + Math.random() * 500,
+          size: 2 + Math.random() * 4,
+          duration: 1.5 + Math.random() * 1.2,
         });
       }
       
