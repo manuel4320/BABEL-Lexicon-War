@@ -239,8 +239,16 @@ export default function TitleAnimation({ onComplete }) {
               initial="initial"
               animate={getBabelState()}
             />
-            {/* Spark effects - positioned between the two titles */}
-            <div style={{ position: 'relative', width: '100%', height: 0, display: 'flex', justifyContent: 'center' }}>
+            {/* Spark effects - positioned at center between the two titles */}
+            <div style={{ 
+              position: 'absolute', 
+              left: '50%', 
+              top: '50%', 
+              transform: 'translate(-50%, -50%)',
+              width: 0,
+              height: 0,
+              zIndex: 10
+            }}>
               <SparkBurst active={showSparks} />
             </div>
             <motion.img
