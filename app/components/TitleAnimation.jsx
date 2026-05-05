@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Metal spark particle component with trail effect
-function MetalSpark({ x, y, angle, delay, color, type }) {
-  const speed = 150 + Math.random() * 200;
-  const gravity = 300 + Math.random() * 200;
-  const duration = 0.5 + Math.random() * 0.6;
-  const size = type === 'large' ? 4 + Math.random() * 3 : 1.5 + Math.random() * 2;
-  const rotation = Math.random() * 360;
-  
-  // Calculate trajectory with gravity
-  const endX = x + Math.cos(angle) * speed;
-  const endY = y + Math.sin(angle) * speed + gravity;
+// Spark particle component
+function Spark({ x, y, angle, delay, color }) {
+  const distance = 80 + Math.random() * 120;
+  const endX = x + Math.cos(angle) * distance;
+  const endY = y + Math.sin(angle) * distance;
+  const size = 2 + Math.random() * 4;
+  const duration = 0.4 + Math.random() * 0.4;
 
   return (
     <motion.div
@@ -19,142 +15,54 @@ function MetalSpark({ x, y, angle, delay, color, type }) {
         x, 
         y, 
         opacity: 1, 
-        scale: 1,
-        rotate: 0
+        scale: 1 
       }}
       animate={{ 
-        x: [x, x + Math.cos(angle) * speed * 0.5, endX],
-        y: [y, y + Math.sin(angle) * speed * 0.3, endY],
-        opacity: [1, 1, 0],
-        scale: [1, 0.8, 0],
-        rotate: rotation
+        x: endX, 
+        y: endY, 
+        opacity: 0, 
+        scale: 0 
       }}
       transition={{ 
         duration, 
-        delay,
-        ease: "easeOut",
-        times: [0, 0.3, 1]
-      }}
-      style={{
-        position: 'absolute',
-        width: type === 'streak' ? size * 4 : size,
-        height: size,
-        borderRadius: type === 'streak' ? '2px' : '50%',
-        background: type === 'streak' 
-          ? `linear-gradient(90deg, transparent, ${color}, ${color})` 
-          : color,
-        boxShadow: `0 0 ${size * 3}px ${color}, 0 0 ${size * 6}px ${color}`,
-        pointerEvents: 'none',
-        transformOrigin: 'center',
-      }}
-    />
-  );
-}
-
-// Hot metal fragment
-function MetalFragment({ x, y, angle, delay }) {
-  const distance = 60 + Math.random() * 100;
-  const gravity = 200 + Math.random() * 150;
-  const duration = 0.6 + Math.random() * 0.4;
-  const size = 3 + Math.random() * 5;
-  const rotation = Math.random() * 720 - 360;
-
-  return (
-    <motion.div
-      initial={{ 
-        x, 
-        y, 
-        opacity: 1, 
-        scale: 1,
-        rotate: 0
-      }}
-      animate={{ 
-        x: x + Math.cos(angle) * distance,
-        y: y + Math.sin(angle) * distance + gravity,
-        opacity: [1, 1, 0.8, 0],
-        scale: [1, 0.9, 0.7, 0],
-        rotate: rotation
-      }}
-      transition={{ 
-        duration, 
-        delay,
-        ease: "easeOut"
+        delay, 
+        ease: "easeOut" 
       }}
       style={{
         position: 'absolute',
         width: size,
-        height: size * 0.6,
-        background: 'linear-gradient(135deg, #fff 0%, #ffdd44 30%, #ff8800 60%, #cc4400 100%)',
-        boxShadow: '0 0 8px #ff8800, 0 0 15px #ff6600, 0 0 25px #ff4400',
-        clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)',
+        height: size,
+        borderRadius: '50%',
+        background: color,
+        boxShadow: `0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color}`,
         pointerEvents: 'none',
       }}
     />
   );
 }
 
-// Generate metal sparks at collision point
-function MetalSparkBurst({ active, centerX, centerY }) {
-  const [particles, setParticles] = useState([]);
+// Generate sparks at collision point
+function SparkBurst({ active, centerX, centerY }) {
+  const [sparks, setSparks] = useState([]);
 
   useEffect(() => {
     if (active) {
-      const newParticles = [];
+      const newSparks = [];
+      const sparkCount = 40;
+      const colors = ['#00ffcc', '#00ddff', '#ffffff', '#ffcc00', '#ff6644'];
       
-      // Hot metal colors - from white hot to cooling
-      const sparkColors = [
-        '#ffffff', // white hot
-        '#ffffcc', // bright yellow
-        '#ffdd44', // golden
-        '#ff9922', // orange
-        '#ff6600', // deep orange
-        '#ff4400', // red-orange
-      ];
-      
-      // Main spark burst - small fast particles
-      for (let i = 0; i < 50; i++) {
-        const angle = (Math.PI * 2 * i) / 50 + (Math.random() - 0.5) * 0.8;
-        newParticles.push({
-          id: `spark-${i}`,
-          type: 'spark',
-          x: centerX + (Math.random() - 0.5) * 20,
-          y: centerY + (Math.random() - 0.5) * 20,
+      for (let i = 0; i < sparkCount; i++) {
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.5;
+        newSparks.push({
+          id: i,
+          x: centerX,
+          y: centerY,
           angle,
-          delay: Math.random() * 0.05,
-          color: sparkColors[Math.floor(Math.random() * sparkColors.length)],
-          sparkType: Math.random() > 0.5 ? 'streak' : 'dot',
+          delay: Math.random() * 0.1,
+          color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
-      
-      // Large bright sparks
-      for (let i = 0; i < 15; i++) {
-        const angle = (Math.PI * 2 * i) / 15 + (Math.random() - 0.5) * 0.5;
-        newParticles.push({
-          id: `large-${i}`,
-          type: 'spark',
-          x: centerX + (Math.random() - 0.5) * 10,
-          y: centerY + (Math.random() - 0.5) * 10,
-          angle,
-          delay: Math.random() * 0.03,
-          color: sparkColors[Math.floor(Math.random() * 3)], // Hotter colors
-          sparkType: 'large',
-        });
-      }
-      
-      // Metal fragments
-      for (let i = 0; i < 12; i++) {
-        const angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.6;
-        newParticles.push({
-          id: `fragment-${i}`,
-          type: 'fragment',
-          x: centerX + (Math.random() - 0.5) * 15,
-          y: centerY + (Math.random() - 0.5) * 15,
-          angle,
-          delay: Math.random() * 0.02,
-        });
-      }
-      
-      setParticles(newParticles);
+      setSparks(newSparks);
     }
   }, [active, centerX, centerY]);
 
@@ -162,13 +70,9 @@ function MetalSparkBurst({ active, centerX, centerY }) {
 
   return (
     <>
-      {particles.map((particle) => 
-        particle.type === 'fragment' ? (
-          <MetalFragment key={particle.id} {...particle} />
-        ) : (
-          <MetalSpark key={particle.id} {...particle} type={particle.sparkType} />
-        )
-      )}
+      {sparks.map((spark) => (
+        <Spark key={spark.id} {...spark} />
+      ))}
     </>
   );
 }
