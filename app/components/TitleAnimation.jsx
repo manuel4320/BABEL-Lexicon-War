@@ -1,25 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Small metallic spark particle
+// Small metallic spark particle that falls down
 function Spark({ x, y, angle, delay, color }) {
-  const distance = 180 + Math.random() * 300;
-  const gravity = 50 + Math.random() * 120;
-  const endX = Math.cos(angle) * distance;
-  const endY = Math.sin(angle) * distance + gravity;
-  const size = 3 + Math.random() * 5;
-  const duration = 0.8 + Math.random() * 0.7;
+  const horizontalSpeed = 80 + Math.random() * 150;
+  const initialUpward = -(50 + Math.random() * 100); // Initial upward burst
+  const fallDistance = 400 + Math.random() * 500; // Fall all the way down
+  const endX = Math.cos(angle) * horizontalSpeed;
+  const size = 2 + Math.random() * 4;
+  const duration = 1.2 + Math.random() * 1.0;
 
   return (
     <motion.div
-      initial={{ x: 0, y: 0, opacity: 1, scale: 1.2 }}
+      initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
       animate={{ 
-        x: endX, 
-        y: endY, 
-        opacity: [1, 1, 0], 
-        scale: [1.2, 0.8, 0]
+        x: [0, endX * 0.5, endX],
+        y: [0, initialUpward, fallDistance],
+        opacity: [1, 1, 1, 0], 
+        scale: [1, 1.2, 0.8, 0]
       }}
-      transition={{ duration, delay, ease: "easeOut", times: [0, 0.5, 1] }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: "easeIn",
+        times: [0, 0.15, 0.7, 1]
+      }}
       style={{
         position: 'absolute',
         left: x,
@@ -35,26 +40,27 @@ function Spark({ x, y, angle, delay, color }) {
   );
 }
 
-// Generate small sparks at collision point
+// Generate sparks that spread and fall
 function SparkBurst({ active }) {
   const [sparks, setSparks] = useState([]);
 
   useEffect(() => {
     if (active) {
       const newSparks = [];
-      // Metallic spark colors
-      const colors = ['#ffffff', '#ffffcc', '#ffcc44', '#ff9900', '#ff6600'];
+      // Metallic spark colors - hot metal
+      const colors = ['#ffffff', '#ffffcc', '#ffdd44', '#ffaa00', '#ff7700', '#ff5500'];
       
-      // Create many small particles - spawn from center with offset
-      const sparkCount = 100;
+      // Create many particles that spread outward and fall
+      const sparkCount = 120;
       for (let i = 0; i < sparkCount; i++) {
-        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 1.5;
+        // Spread mostly horizontally with some vertical variation
+        const angle = (Math.random() - 0.5) * Math.PI * 0.8 + (Math.random() > 0.5 ? 0 : Math.PI);
         newSparks.push({
           id: i,
-          x: (Math.random() - 0.5) * 80,
-          y: (Math.random() - 0.5) * 50,
+          x: (Math.random() - 0.5) * 100,
+          y: (Math.random() - 0.5) * 40,
           angle,
-          delay: Math.random() * 0.2,
+          delay: Math.random() * 0.25,
           color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
@@ -137,6 +143,7 @@ export default function TitleAnimation({ onComplete }) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'visible',
     },
     babelImage: {
       maxWidth: '90%',
