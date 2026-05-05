@@ -2,28 +2,23 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Small metallic spark particle that falls down
-function Spark({ x, y, angle, delay, color }) {
-  const horizontalSpeed = 80 + Math.random() * 150;
-  const initialUpward = -(50 + Math.random() * 100); // Initial upward burst
-  const fallDistance = 400 + Math.random() * 500; // Fall all the way down
+function Spark({ x, y, angle, delay, color, horizontalSpeed, initialUpward, fallDistance, size, duration }) {
   const endX = Math.cos(angle) * horizontalSpeed;
-  const size = 2 + Math.random() * 4;
-  const duration = 1.2 + Math.random() * 1.0;
 
   return (
     <motion.div
       initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
       animate={{ 
-        x: [0, endX * 0.5, endX],
-        y: [0, initialUpward, fallDistance],
-        opacity: [1, 1, 1, 0], 
-        scale: [1, 1.2, 0.8, 0]
+        x: [0, endX * 0.3, endX * 0.8, endX],
+        y: [0, initialUpward, fallDistance * 0.5, fallDistance],
+        opacity: [1, 1, 0.8, 0], 
+        scale: [1, 1.2, 0.6, 0]
       }}
       transition={{ 
         duration, 
         delay, 
-        ease: "easeIn",
-        times: [0, 0.15, 0.7, 1]
+        ease: [0.25, 0.1, 0.25, 1],
+        times: [0, 0.1, 0.5, 1]
       }}
       style={{
         position: 'absolute',
@@ -51,17 +46,23 @@ function SparkBurst({ active }) {
       const colors = ['#ffffff', '#ffffcc', '#ffdd44', '#ffaa00', '#ff7700', '#ff5500'];
       
       // Create many particles that spread outward and fall
-      const sparkCount = 120;
+      const sparkCount = 150;
       for (let i = 0; i < sparkCount; i++) {
-        // Spread mostly horizontally with some vertical variation
-        const angle = (Math.random() - 0.5) * Math.PI * 0.8 + (Math.random() > 0.5 ? 0 : Math.PI);
+        // Spread horizontally from collision point
+        const angle = (Math.random() - 0.5) * Math.PI * 1.2 + (Math.random() > 0.5 ? 0 : Math.PI);
         newSparks.push({
           id: i,
-          x: (Math.random() - 0.5) * 100,
-          y: (Math.random() - 0.5) * 40,
+          x: (Math.random() - 0.5) * 60,
+          y: (Math.random() - 0.5) * 30,
           angle,
-          delay: Math.random() * 0.25,
+          delay: Math.random() * 0.15,
           color: colors[Math.floor(Math.random() * colors.length)],
+          // Pre-calculate random values
+          horizontalSpeed: 100 + Math.random() * 200,
+          initialUpward: -(30 + Math.random() * 80),
+          fallDistance: 500 + Math.random() * 400,
+          size: 3 + Math.random() * 5,
+          duration: 1.5 + Math.random() * 1.0,
         });
       }
       
@@ -133,7 +134,7 @@ export default function TitleAnimation({ onComplete }) {
       alignItems: 'center',
       justifyContent: 'center',
       background: 'rgba(0,0,8,0.95)',
-      overflow: 'hidden',
+      overflow: 'visible',
     },
     imagesWrapper: {
       position: 'relative',
