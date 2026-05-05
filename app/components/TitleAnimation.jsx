@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Small metallic spark particle
 function Spark({ x, y, angle, delay, color }) {
-  const distance = 80 + Math.random() * 150;
-  const gravity = 60 + Math.random() * 80;
+  const distance = 180 + Math.random() * 300;
+  const gravity = 50 + Math.random() * 120;
   const endX = Math.cos(angle) * distance;
   const endY = Math.sin(angle) * distance + gravity;
-  const size = 4 + Math.random() * 5;
-  const duration = 0.6 + Math.random() * 0.6;
+  const size = 3 + Math.random() * 5;
+  const duration = 0.8 + Math.random() * 0.7;
 
   return (
     <motion.div
@@ -45,16 +45,16 @@ function SparkBurst({ active }) {
       // Metallic spark colors
       const colors = ['#ffffff', '#ffffcc', '#ffcc44', '#ff9900', '#ff6600'];
       
-      // Create many small particles - spawn from center with small offset
-      const sparkCount = 80;
+      // Create many small particles - spawn from center with offset
+      const sparkCount = 100;
       for (let i = 0; i < sparkCount; i++) {
-        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 1.2;
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 1.5;
         newSparks.push({
           id: i,
-          x: (Math.random() - 0.5) * 50,
-          y: (Math.random() - 0.5) * 30,
+          x: (Math.random() - 0.5) * 80,
+          y: (Math.random() - 0.5) * 50,
           angle,
-          delay: Math.random() * 0.15,
+          delay: Math.random() * 0.2,
           color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
