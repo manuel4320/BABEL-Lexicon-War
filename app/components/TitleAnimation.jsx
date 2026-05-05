@@ -1,162 +1,63 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Metallic spark particle component - elongated for metal grinding effect
-function Spark({ x, y, angle, delay, color, isTrail }) {
-  const distance = 100 + Math.random() * 180;
-  const gravity = 150 + Math.random() * 100; // Sparks fall due to gravity
+// Small metallic spark particle
+function Spark({ x, y, angle, delay, color }) {
+  const distance = 60 + Math.random() * 120;
+  const gravity = 80 + Math.random() * 60;
   const endX = x + Math.cos(angle) * distance;
   const endY = y + Math.sin(angle) * distance + gravity;
-  const width = isTrail ? (1 + Math.random() * 2) : (2 + Math.random() * 3);
-  const height = isTrail ? (8 + Math.random() * 15) : (3 + Math.random() * 5);
-  const duration = 0.5 + Math.random() * 0.6;
-  const rotation = (angle * 180) / Math.PI;
+  const size = 2 + Math.random() * 3;
+  const duration = 0.4 + Math.random() * 0.5;
 
   return (
     <motion.div
-      initial={{ 
-        x, 
-        y, 
-        opacity: 1, 
-        scale: 1,
-        rotate: rotation
-      }}
-      animate={{ 
-        x: [x, x + (endX - x) * 0.3, endX], 
-        y: [y, y + (endY - y) * 0.2, endY], 
-        opacity: [1, 1, 0], 
-        scale: [1, 0.8, 0]
-      }}
-      transition={{ 
-        duration, 
-        delay, 
-        ease: "easeOut",
-        times: [0, 0.3, 1]
-      }}
-      style={{
-        position: 'absolute',
-        width: width,
-        height: height,
-        borderRadius: isTrail ? '1px' : '50%',
-        background: `linear-gradient(to bottom, ${color}, transparent)`,
-        boxShadow: `0 0 ${width * 3}px ${color}, 0 0 ${width * 6}px ${color}`,
-        pointerEvents: 'none',
-        transformOrigin: 'center center',
-      }}
-    />
-  );
-}
-
-// Hot metal fragment that bounces
-function MetalFragment({ x, y, angle, delay }) {
-  const distance = 60 + Math.random() * 100;
-  const endX = x + Math.cos(angle) * distance;
-  const endY = y + Math.sin(angle) * distance + 200;
-  const size = 3 + Math.random() * 5;
-  const duration = 0.8 + Math.random() * 0.4;
-  const rotation = Math.random() * 720 - 360;
-
-  return (
-    <motion.div
-      initial={{ 
-        x, 
-        y, 
-        opacity: 1, 
-        scale: 1,
-        rotate: 0
-      }}
+      initial={{ x, y, opacity: 1, scale: 1 }}
       animate={{ 
         x: endX, 
         y: endY, 
-        opacity: [1, 1, 0.8, 0], 
-        scale: [1, 1.2, 0.6, 0],
-        rotate: rotation
+        opacity: 0, 
+        scale: 0 
       }}
-      transition={{ 
-        duration, 
-        delay, 
-        ease: "easeOut",
-        times: [0, 0.2, 0.6, 1]
-      }}
+      transition={{ duration, delay, ease: "easeOut" }}
       style={{
         position: 'absolute',
         width: size,
         height: size,
-        background: 'linear-gradient(135deg, #fff 0%, #ffaa00 30%, #ff6600 60%, #cc3300 100%)',
-        boxShadow: '0 0 8px #ff6600, 0 0 16px #ff4400, 0 0 24px #ff220088',
+        borderRadius: '50%',
+        background: color,
+        boxShadow: `0 0 ${size * 2}px ${color}`,
         pointerEvents: 'none',
-        clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
       }}
     />
   );
 }
 
-// Generate metallic sparks at collision point
+// Generate small sparks at collision point
 function SparkBurst({ active, centerX, centerY }) {
   const [sparks, setSparks] = useState([]);
-  const [fragments, setFragments] = useState([]);
 
   useEffect(() => {
     if (active) {
       const newSparks = [];
-      const newFragments = [];
+      // Metallic spark colors
+      const colors = ['#ffffff', '#ffffcc', '#ffcc44', '#ff9900', '#ff6600'];
       
-      // Metallic spark colors - hot metal palette
-      const hotColors = ['#ffffff', '#ffffaa', '#ffcc44', '#ff9900', '#ff6600', '#ff4400'];
-      const coolColors = ['#ffaa66', '#ff8844', '#dd6622', '#bb4400'];
-      
-      // Main burst of sparks - more concentrated horizontally (collision direction)
-      const mainSparkCount = 60;
-      for (let i = 0; i < mainSparkCount; i++) {
-        // Sparks spray more horizontally from impact point
-        const baseAngle = (Math.random() > 0.5 ? 0 : Math.PI) + (Math.random() - 0.5) * 1.2;
-        const angle = baseAngle + (Math.random() - 0.5) * 0.8;
-        const offsetX = (Math.random() - 0.5) * 40;
-        const offsetY = (Math.random() - 0.5) * 30;
-        
+      // Create many small particles
+      const sparkCount = 50;
+      for (let i = 0; i < sparkCount; i++) {
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.8;
         newSparks.push({
-          id: `main-${i}`,
-          x: centerX + offsetX,
-          y: centerY + offsetY,
-          angle,
-          delay: Math.random() * 0.08,
-          color: hotColors[Math.floor(Math.random() * hotColors.length)],
-          isTrail: false,
-        });
-      }
-      
-      // Trailing sparks - longer, thinner
-      const trailCount = 35;
-      for (let i = 0; i < trailCount; i++) {
-        const baseAngle = (Math.random() > 0.5 ? -0.3 : Math.PI + 0.3);
-        const angle = baseAngle + (Math.random() - 0.5) * 0.6;
-        
-        newSparks.push({
-          id: `trail-${i}`,
-          x: centerX + (Math.random() - 0.5) * 20,
-          y: centerY + (Math.random() - 0.5) * 20,
-          angle,
-          delay: Math.random() * 0.12,
-          color: coolColors[Math.floor(Math.random() * coolColors.length)],
-          isTrail: true,
-        });
-      }
-      
-      // Hot metal fragments
-      const fragmentCount = 12;
-      for (let i = 0; i < fragmentCount; i++) {
-        const angle = (Math.PI * 2 * i) / fragmentCount + (Math.random() - 0.5) * 0.5;
-        newFragments.push({
-          id: `frag-${i}`,
+          id: i,
           x: centerX + (Math.random() - 0.5) * 30,
           y: centerY + (Math.random() - 0.5) * 20,
           angle,
-          delay: Math.random() * 0.05,
+          delay: Math.random() * 0.1,
+          color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
       
       setSparks(newSparks);
-      setFragments(newFragments);
     }
   }, [active, centerX, centerY]);
 
@@ -167,50 +68,11 @@ function SparkBurst({ active, centerX, centerY }) {
       {sparks.map((spark) => (
         <Spark key={spark.id} {...spark} />
       ))}
-      {fragments.map((frag) => (
-        <MetalFragment key={frag.id} {...frag} />
-      ))}
     </>
   );
 }
 
-// Metallic flash effect on collision - bright white/orange flash
-function CollisionFlash({ active }) {
-  return (
-    <AnimatePresence>
-      {active && (
-        <>
-          {/* Initial bright white flash */}
-          <motion.div
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'radial-gradient(circle at center, rgba(255,255,255,0.9) 0%, rgba(255,200,100,0.5) 30%, transparent 60%)',
-              pointerEvents: 'none',
-            }}
-          />
-          {/* Secondary orange/red heat glow */}
-          <motion.div
-            initial={{ opacity: 0.8 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'radial-gradient(circle at center, rgba(255,100,0,0.4) 0%, rgba(255,50,0,0.2) 40%, transparent 70%)',
-              pointerEvents: 'none',
-            }}
-          />
-        </>
-      )}
-    </AnimatePresence>
-  );
-}
+
 
 
 
@@ -378,8 +240,7 @@ export default function TitleAnimation({ onComplete }) {
         centerY={screenCenter.y} 
       />
       
-      {/* Collision flash */}
-      <CollisionFlash active={phase === 2} />
+      
 
       <div style={styles.imagesWrapper}>
         {/* Separate images that collide */}
@@ -417,23 +278,7 @@ export default function TitleAnimation({ onComplete }) {
         )}
       </div>
 
-{/* Ambient heat glow during collision - metallic orange/red */}
-  <AnimatePresence>
-  {phase >= 2 && phase < 4 && (
-  <motion.div
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 0.4 }}
-  exit={{ opacity: 0 }}
-  transition={{ duration: 0.2 }}
-  style={{
-  position: 'absolute',
-  inset: 0,
-  background: 'radial-gradient(ellipse at center, rgba(255,150,50,0.2) 0%, rgba(255,80,0,0.1) 40%, transparent 70%)',
-  pointerEvents: 'none',
-            }}
-          />
-        )}
-      </AnimatePresence>
+
     </div>
   );
 }
