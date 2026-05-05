@@ -5,14 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 function Spark({ x, y, angle, delay, color }) {
   const distance = 80 + Math.random() * 150;
   const gravity = 60 + Math.random() * 80;
-  const endX = x + Math.cos(angle) * distance;
-  const endY = y + Math.sin(angle) * distance + gravity;
+  const endX = Math.cos(angle) * distance;
+  const endY = Math.sin(angle) * distance + gravity;
   const size = 4 + Math.random() * 5;
   const duration = 0.6 + Math.random() * 0.6;
 
   return (
     <motion.div
-      initial={{ x, y, opacity: 1, scale: 1.2 }}
+      initial={{ x: 0, y: 0, opacity: 1, scale: 1.2 }}
       animate={{ 
         x: endX, 
         y: endY, 
@@ -22,6 +22,8 @@ function Spark({ x, y, angle, delay, color }) {
       transition={{ duration, delay, ease: "easeOut", times: [0, 0.5, 1] }}
       style={{
         position: 'absolute',
+        left: x,
+        top: y,
         width: size,
         height: size,
         borderRadius: '50%',
@@ -34,7 +36,7 @@ function Spark({ x, y, angle, delay, color }) {
 }
 
 // Generate small sparks at collision point
-function SparkBurst({ active, centerX, centerY }) {
+function SparkBurst({ active }) {
   const [sparks, setSparks] = useState([]);
 
   useEffect(() => {
@@ -43,14 +45,14 @@ function SparkBurst({ active, centerX, centerY }) {
       // Metallic spark colors
       const colors = ['#ffffff', '#ffffcc', '#ffcc44', '#ff9900', '#ff6600'];
       
-      // Create many small particles
+      // Create many small particles - spawn from center with small offset
       const sparkCount = 80;
       for (let i = 0; i < sparkCount; i++) {
         const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 1.2;
         newSparks.push({
           id: i,
-          x: centerX + (Math.random() - 0.5) * 50,
-          y: centerY + (Math.random() - 0.5) * 30,
+          x: (Math.random() - 0.5) * 50,
+          y: (Math.random() - 0.5) * 30,
           angle,
           delay: Math.random() * 0.15,
           color: colors[Math.floor(Math.random() * colors.length)],
@@ -59,7 +61,7 @@ function SparkBurst({ active, centerX, centerY }) {
       
       setSparks(newSparks);
     }
-  }, [active, centerX, centerY]);
+  }, [active]);
 
   if (!active) return null;
 
@@ -79,19 +81,11 @@ function SparkBurst({ active, centerX, centerY }) {
 export default function TitleAnimation({ onComplete }) {
   const [phase, setPhase] = useState(0);
   const [showSparks, setShowSparks] = useState(false);
-  const [screenCenter, setScreenCenter] = useState({ x: 0, y: 0 });
   const onCompleteRef = React.useRef(onComplete);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
-
-  useEffect(() => {
-    setScreenCenter({
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2 - 20,
-    });
-  }, []);
 
   useEffect(() => {
     // Phase 0: Initial state
@@ -233,15 +227,6 @@ export default function TitleAnimation({ onComplete }) {
 
   return (
     <div style={styles.container}>
-      {/* Spark effects */}
-      <SparkBurst 
-        active={showSparks} 
-        centerX={screenCenter.x} 
-        centerY={screenCenter.y} 
-      />
-      
-      
-
       <div style={styles.imagesWrapper}>
         {/* Separate images that collide */}
         {phase < 4 && (
@@ -254,6 +239,10 @@ export default function TitleAnimation({ onComplete }) {
               initial="initial"
               animate={getBabelState()}
             />
+            {/* Spark effects - positioned between the two titles */}
+            <div style={{ position: 'relative', width: '100%', height: 0, display: 'flex', justifyContent: 'center' }}>
+              <SparkBurst active={showSparks} />
+            </div>
             <motion.img
               src="/images/the-lexicon-war.png"
               alt="The Lexicon War"
