@@ -1,7 +1,6 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { ShipBase } from './ShipBase.js';
-import { COLORS, COLORS_FLOW } from '../../shared/constants.js';
-import { Bridge } from '../../shared/bridge.js';
+import { COLORS } from '../../shared/constants.js';
 import { BoosterEffect, SHIP_BOOSTER_CONFIGS } from '../rendering/BoosterEffect.js';
 
 const COMBAT_MODEL_URL = '/models/spaceshipnew.glb';
@@ -35,8 +34,6 @@ export class CombatPlayerShip extends ShipBase {
 
     this._group.position.copy(this._basePosition);
     this._collapsing = false;
-    this._thermalColorCache = new THREE.Color();
-    CombatPlayerShip._rampColors = null;
     this._collapseT = 0;
     this._collapseOnDone = null;
     this._collapseDone = false;
@@ -133,9 +130,9 @@ export class CombatPlayerShip extends ShipBase {
         material.emissive = new THREE.Color(0.85, 0.52, 0.18);
         material.emissiveIntensity = Math.max(material.emissiveIntensity ?? 0, 3.5);
       }
-      if ('metalness' in material) material.metalness = Math.max(0.82, (material.metalness ?? 0.5));
-      if ('roughness' in material) material.roughness = Math.min(0.10, (material.roughness ?? 0.7) * 0.12);
-      if ('envMapIntensity' in material) material.envMapIntensity = Math.max(material.envMapIntensity ?? 0, 4.2);
+      if ('metalness' in material) material.metalness = Math.min(0.40, (material.metalness ?? 0.5) * 0.55);
+      if ('roughness' in material) material.roughness = Math.max(0.08, (material.roughness ?? 0.7) - 0.50);
+      if ('envMapIntensity' in material) material.envMapIntensity = Math.max(material.envMapIntensity ?? 0, 1.8);
       material.needsUpdate = true;
     });
   }
@@ -222,9 +219,6 @@ export class CombatPlayerShip extends ShipBase {
     super.update(delta);
 
     const floatY = Math.sin(this._t * 1.2) * 0.12;
-    // Sinusoidal roll — wings rise and fall at ~0.85 Hz
-    const wingRoll = Math.sin(this._t * 0.85) * 0.045;
-    this._shipRoot.rotation.z = wingRoll;
     const shakeY = this._hitShake > 0 ? Math.sin(this._t * 28) * this._hitShake * 0.35 : 0;
     if (this._hitShake > 0) this._hitShake = Math.max(0, this._hitShake - delta * 4);
     this._group.position.y = this._basePosition.y + floatY + shakeY;
@@ -235,13 +229,13 @@ export class CombatPlayerShip extends ShipBase {
 
     if (this._targetPos) {
       const dir = new THREE.Vector3().subVectors(this._targetPos, this._group.position).normalize();
-      dir.y = -0.05;
+      dir.y = -0.25;
       dir.normalize();
       const targetQuat = new THREE.Quaternion().setFromUnitVectors(
         new THREE.Vector3(0, 0, -1),
         dir,
       );
-      this._group.quaternion.slerp(targetQuat, delta * 7);
+      this._group.quaternion.slerp(targetQuat, delta * 3);
     } else {
       this._group.quaternion.slerp(new THREE.Quaternion(), delta * 2);
     }
@@ -258,36 +252,12 @@ export class CombatPlayerShip extends ShipBase {
     if (this._lightFill) this._lightFill.intensity = 3.0 + Math.sin(this._t * 2.4) * 0.14 + this._recoil * 0.3;
     if (this._lightBack) this._lightBack.intensity = 3.4 + Math.sin(this._t * 2.2) * 0.16 + this._recoil * 0.4;
 
-    const { flow: _flow, flowActive: _flowActive } = Bridge.peekState();
-    this._booster.setThermalColor(this._getThermalColor(_flow, _flowActive));
-    this._booster.update(delta, this._isThrusting, _flowActive ? 1.4 : 1.0, _flowActive ? 1.18 : 1.0, _flowActive);
+    this._booster.update(delta, this._isThrusting);
     if (this._isThrusting) this._isThrusting = false;   // auto-clear; caller sets it each frame
-  }
-
-  get thermalColor() {
-    const { flow, flowActive } = Bridge.peekState();
-    return this._getThermalColor(flow, flowActive);
   }
 
   /** Call each frame while the engines are firing (e.g. when targeting, boosting, or recoiling). */
   setThrusting(on) { this._isThrusting = on; }
-
-  _getThermalColor(flow, flowActive) {
-    if (!CombatPlayerShip._rampColors)
-      CombatPlayerShip._rampColors = COLORS_FLOW.RAMP.map(c => new THREE.Color(c));
-    if (flowActive) return COLORS_FLOW.RAMP[4];
-    const ramp = CombatPlayerShip._rampColors;
-    const norm = Math.max(0, Math.min(1, flow / 100));
-    const seg  = Math.min(3, Math.floor(norm * 4));
-    const t    = norm * 4 - seg;
-    return '#' + this._thermalColorCache.copy(ramp[seg]).lerp(ramp[seg + 1], t).getHexString();
-  }
-
-  /** Booster burst on correct letter typed. */
-  onLetterCorrect(intensity = 1.0) {
-    this._booster.triggerLetterHit(intensity);
-    this._isThrusting = true;
-  }
 
 
   startCollapse(scene, onDone) {

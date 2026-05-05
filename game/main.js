@@ -51,20 +51,18 @@ export async function initGame(mountEl) {
 
     if (mode === GAME_MODES.RACING) {
       engine.camController.setRacingMode(true);
-      engine.suppressGlobalLights();
       hudCanvas.setTokens([]);
       _physics.setEnemies([]);
 
       const rsm = new RacingSceneManager(engine.scene, hudCanvas, engine.camController);
       rsm.init();
-      engine.invalidateBloomCache();
 
       const rs = new RacingSystem(_lexicon);
       rs.init();
 
       _activeScene = {
         update:  (d) => { rsm.update(d); rs.update(d); },
-        destroy: ()  => { rsm.destroy(); rs.destroy(); engine.camController.setRacingMode(false); engine.restoreGlobalLights(); },
+        destroy: ()  => { rsm.destroy(); rs.destroy(); engine.camController.setRacingMode(false); },
       };
 
     } else {
@@ -72,7 +70,6 @@ export async function initGame(mountEl) {
 
       const sm = new CombatSceneManager(engine.scene, _lexicon, _physics, hudCanvas, engine.camController);
       sm.init();
-      engine.invalidateBloomCache();
 
       _physics.setEnemies(sm.enemies);
       sm.startCombatWithCountdown();
