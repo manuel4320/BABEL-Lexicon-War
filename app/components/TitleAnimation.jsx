@@ -212,70 +212,7 @@ function CollisionFlash({ active }) {
   );
 }
 
-// Metallic impact shockwave - multiple rings with heat distortion look
-function Shockwave({ active, centerX, centerY }) {
-  return (
-    <AnimatePresence>
-      {active && (
-        <>
-          {/* Primary impact ring - white hot */}
-          <motion.div
-            initial={{ scale: 0, opacity: 1 }}
-            animate={{ scale: 2.5, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            style={{
-              position: 'absolute',
-              left: centerX - 60,
-              top: centerY - 60,
-              width: 120,
-              height: 120,
-              borderRadius: '50%',
-              border: '3px solid rgba(255,255,255,0.9)',
-              boxShadow: '0 0 20px rgba(255,200,100,0.5), inset 0 0 20px rgba(255,150,50,0.3)',
-              pointerEvents: 'none',
-            }}
-          />
-          {/* Secondary ring - orange heat */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0.8 }}
-            animate={{ scale: 3, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-            style={{
-              position: 'absolute',
-              left: centerX - 50,
-              top: centerY - 50,
-              width: 100,
-              height: 100,
-              borderRadius: '50%',
-              border: '2px solid rgba(255,150,50,0.7)',
-              boxShadow: '0 0 15px rgba(255,100,0,0.4)',
-              pointerEvents: 'none',
-            }}
-          />
-          {/* Third ring - cooler */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0.6 }}
-            animate={{ scale: 4, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
-            style={{
-              position: 'absolute',
-              left: centerX - 40,
-              top: centerY - 40,
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              border: '1px solid rgba(255,100,50,0.5)',
-              pointerEvents: 'none',
-            }}
-          />
-        </>
-      )}
-    </AnimatePresence>
-  );
-}
+
 
 export default function TitleAnimation({ onComplete }) {
   const [phase, setPhase] = useState(0);
@@ -443,13 +380,6 @@ export default function TitleAnimation({ onComplete }) {
       
       {/* Collision flash */}
       <CollisionFlash active={phase === 2} />
-      
-      {/* Shockwave */}
-      <Shockwave 
-        active={phase === 2} 
-        centerX={screenCenter.x} 
-        centerY={screenCenter.y} 
-      />
 
       <div style={styles.imagesWrapper}>
         {/* Separate images that collide */}
